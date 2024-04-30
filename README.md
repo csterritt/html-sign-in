@@ -1,4 +1,4 @@
-### Allow sign up via email magic code, html forms only, as a base for projects
+## Allow sign up via email magic code, html forms only, as a base for projects
 
 - Let users sign in, sign out, and optionally sign up
     - If you can't sign up, an admin will have to add users directly to a database
@@ -16,10 +16,11 @@ It is built using:
 - There is no JavaScript on the pages themselves, it's pure HTML forms
     - Optionally, there could be JavaScript to (e.g.) prevent form submission without required fields
 
-#### To make it work:
+### To make it work:
 
 1. Set up a database, e.g.:
 
+```
    wrangler d1 create html-sign-in-db
 
    This will produce lines of the form:
@@ -28,12 +29,14 @@ It is built using:
    binding = "DB" # i.e. available in your Worker on env.DB
    database_name = "html-sign-in-db"
    database_id = "long-database-id-for-your-database"
+```
 
 2. Add those lines to the end of your `wrangler.toml` file
    (*note*: `wrangler.toml` doesn't have a newline at the end, make sure you add one before pasting)
 
 3. Set up a `schema.sql` file (or whatever name you want), e.g.:
 
+```
    DROP TABLE IF EXISTS Counts;
    CREATE TABLE HSICounts (
    UserId INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,9 +44,12 @@ It is built using:
 
    INSERT INTO HSICounts (UserId, Val) values
    (1, 0);
+```
 
 4. Insert the schema into the local database (`html-sign-in-db` is the `database_name` referenced above):
 
+```
    wrangler d1 execute html-sign-in-db --file=./schema.sql
+```
 
 Now you can run as usual, and the code will be able to read and write the database.
