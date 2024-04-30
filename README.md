@@ -1,4 +1,4 @@
-### This project is a website to:
+### Allow sign up via email magic code, html forms only, as a base for projects
 
 - Let users sign in, sign out, and optionally sign up
     - If you can't sign up, an admin will have to add users directly to a database
@@ -9,6 +9,7 @@ It is built using:
 
 - Typescript
 - Cloudflare pages and page functions
+- Hono
 - Cloudflare D1 database
 - An SMTP-capable email sending service (e.g., Purelymail.com)
 - The session is just a single random-text cookie, so you can sign in on multiple devices
