@@ -22,9 +22,11 @@ It is built using:
 
 ```
    wrangler d1 create html-sign-in-db
+```
 
-   This will produce lines of the form:
+This will produce lines of the form:
 
+```
    [[d1_databases]]
    binding = "DB" # i.e. available in your Worker on env.DB
    database_name = "html-sign-in-db"
