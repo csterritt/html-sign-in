@@ -8,7 +8,8 @@ export default defineConfig({
     build(),
     devServer({
       adapter,
-      entry: 'src/index.tsx'
-    })
-  ]
+      entry: 'src/index.tsx',
+    }),
+  ],
+  server: { port: 3000 },
 })

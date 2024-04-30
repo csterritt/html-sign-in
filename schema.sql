@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS Counts;
+CREATE TABLE HSICounts (
+    UserId INTEGER PRIMARY KEY AUTOINCREMENT,
+    Val INTEGER NOT NULL);
+
+INSERT INTO HSICounts (UserId, Val) values
+    (1, 0);
