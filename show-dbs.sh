@@ -1,9 +1,9 @@
 #!/bin/sh
 set -euo pipefail
 
-local="--local"
+local=""
 if [ "x${1-}" != "x" ] ; then
-  local=""
+  local="--remote"
 fi
 
 #wrangler d1 execute html-sign-in-db ${local} --command='select * from llpeople;'
