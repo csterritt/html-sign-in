@@ -19,3 +19,7 @@ pages_build_output_dir = "./dist"
 
 # [ai]
 # binding = "AI"
+[[d1_databases]]
+binding = "HTML_SIGN_IN_DB" # i.e. available in your Worker on env.DB
+database_name = "html-sign-in-db"
+database_id = "d6b9febf-5f4c-4d2c-b764-8db5759fcd89"
