@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { renderer } from '../renderer'
+import { renderer } from './renderer'
 
 // const app = new Hono()
 type Bindings = {
@@ -11,7 +11,7 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.use(renderer)
 
 app.get('/', (c) => {
-  return c.render(<h1 class='font-bold ml-8'>Hello!</h1>)
+  return c.render(<h1 class='text-2xl ml-8'>Hello!</h1>)
 })
 
 app.get('/count/:id', async (c) => {

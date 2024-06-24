@@ -5,9 +5,9 @@ export const renderer = jsxRenderer(({ children, title }) => {
     <html>
       <head>
         <link href='/static/style.css' rel='stylesheet' />
-        <title>{title}</title>
+        <title>HTML Sign In</title>
       </head>
-      <body class='m-auto font-sans'>{children}</body>
+      <body class='font-sans'>{children}</body>
     </html>
   )
 })
