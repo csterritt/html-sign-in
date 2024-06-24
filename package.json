@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npx tailwindcss -m -o public/static/style.css --content 'renderer.tsx' --content './src/**/*.{js,ts,jsx,tsx}' ; vite build",
     "preview": "wrangler pages dev dist",
     "deploy": "$npm_execpath run build && wrangler pages deploy dist"
   },
