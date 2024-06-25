@@ -10,3 +10,6 @@ pnpm-lock.yaml
 bun.lockb
 .idea
 alg.info
+
+# Derived files
+public/static/style-XXXXXX.css
