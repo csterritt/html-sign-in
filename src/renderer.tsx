@@ -7,7 +7,9 @@ export const renderer = jsxRenderer(({ children, title }) => {
         <link href='/static/style-XXXXXX.css' rel='stylesheet' />
         <title>HTML Sign In</title>
       </head>
-      <body class='font-serif bg-amber-100'>{children}</body>
+      <body class='font-slabserif h-full min-h-screen flex flex-col justify-between md:mx-auto max-w-7xl pb-3'>
+        {children}
+      </body>
     </html>
   )
 })

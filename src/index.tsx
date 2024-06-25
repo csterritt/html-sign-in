@@ -11,7 +11,28 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.use(renderer)
 
 app.get('/', (c) => {
-  return c.render(<h1 class='text-2xl ml-8'>Hello!</h1>)
+  return c.render(
+    <div class='flex flex-col grow'>
+      <div class='flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content textarea-accent'>
+        <div class='px-2 mx-2'>
+          <span class='text-lg font-bold md:hidden'>SI-EX</span>
+          <span class='text-lg font-bold hidden md:inline-block'>
+            Sign In Example
+          </span>
+        </div>
+      </div>
+
+      <div class='flex-grow mx-6'>
+        <span class='text-2xl italic'>Nothing to see here (yet)</span>
+      </div>
+
+      <div class='mx-6'>
+        <span>Content copyright Chris Sterritt, 2024</span>
+        <span class='mx-2'>-</span>
+        <span>Vx</span>
+      </div>
+    </div>
+  )
 })
 
 app.get('/count/:id', async (c) => {

@@ -17,6 +17,7 @@
     "@hono/vite-dev-server": "^0.12.0",
     "@types/cookie": "^0.6.0",
     "autoprefixer": "^10.4.19",
+    "daisyui": "^4.12.8",
     "globby": "^14.0.1",
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
