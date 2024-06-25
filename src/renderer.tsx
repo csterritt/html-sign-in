@@ -4,10 +4,10 @@ export const renderer = jsxRenderer(({ children, title }) => {
   return (
     <html>
       <head>
-        <link href='/static/style.css' rel='stylesheet' />
+        <link href='/static/style-XXXXXX.css' rel='stylesheet' />
         <title>HTML Sign In</title>
       </head>
-      <body class='font-sans'>{children}</body>
+      <body class='font-serif bg-amber-100'>{children}</body>
     </html>
   )
 })
