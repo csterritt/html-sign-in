@@ -1,0 +1,43 @@
+This is going to a state machine, so let's enumerate the states.
+
+1. Signed out.
+2. Signing in, no email or password given.
+3. Signing in, email given but magic code not given.
+4. Signing in, bad email given and magic code not given.
+5. Signing in, email given and magic code given.
+6. Signing in, email given and bad magic code given, fewer than N tries of the magic code.
+7. Signing in, email given and bad magic code given, at least N tries of the magic code.
+8. Signed in.
+
+Behaviors and screen information at each step:
+
+1. Signed out.
+  - Screen shows "Sign In" button, links to protected content may exist.
+2. Signing in, no email or password given.
+  - Screen shows "Enter your email" prompt and email text entry field.
+3. Signing in, bad email given and magic code not given.
+  - Email saved in cookie
+  - Screen shows error message, "Enter your email" prompt and email text entry field.
+4. Signing in, email given but magic code not given.
+  - Email saved in cookie
+  - New session generated in database with new magic code, code-try count of 0
+  - Email sent with magic code
+  - Screen shows "Email sent, enter your magic code from the email" prompt and code numeric entry field.
+5. Signing in, email given and bad magic code given, fewer than N tries of the magic code.
+  - Count of tries set to old count + 1 in session in database
+  - Screen shows error message, "Email sent, enter your magic code from the email" prompt and code numeric entry field.
+6. Signing in, email given and bad magic code given, at least N tries of the magic code.
+  - Clear session and cookie from database
+  - Screen shows error message "Too many bad codes entered, start over" and redirects you to step 1.
+7. Signing in, good email given and good magic code given.
+  - Signed in bit set for session in the database, try-count cleared in session, magic code cleared in session.
+  - On to step 8
+8. Signed in.
+  - Screen shows "Signed in successfully!" message, "Sign Out" button, links to protected content may exist.
+9. Sign out button clicked.
+  - Session and cookie cleared.
+
+When the user is not signed in, clicking a link to protected content results in an error message,
+and they are taken to the "Sign In" page.
+
+When the user is signed in, clicking a link to protected content goes to that page successfully.
