@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "dev": "./run-dev.sh",
-    "build": "rm -rf dist ; npx tailwindcss -m -o public/static/style-XXXXXX.css --content './src/**/*.{js,ts,jsx,tsx}' ; vite build",
+    "build": "rm -rf dist ; npx tailwindcss -m -o public/static/style-XXXXXX.css --content './src/**/*.{js,ts,jsx,tsx}' ; vite build ; node timestamp-build-filenames.js",
     "preview": "wrangler pages dev dist",
     "deploy": "$npm_execpath run build && wrangler pages deploy dist"
   },
