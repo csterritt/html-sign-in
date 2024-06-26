@@ -9,7 +9,7 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
   app.get(SIGN_IN_PATH, (c) => {
     return c.render(
       <Fragment>
-        {header(null, 'sign-in-page-banner')}
+        {header('sign-in-page-banner')}
 
         <div class='flex-grow mx-6'>
           <div class='card bg-gray-100 dark:bg-gray-700 relative'>

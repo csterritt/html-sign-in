@@ -5,7 +5,7 @@ export type HeaderElement =
   | Promise<HtmlEscapedString>
   | null
 
-export const header = (children: HeaderElement, testId: string) => (
+export const header = (testId: string, children: HeaderElement = null) => (
   <div
     class='flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content'
     data-testid={testId}

@@ -17,7 +17,7 @@ export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) => {
   app.get(ROOT_PATH, (c) => {
     return c.render(
       <Fragment>
-        {header(signInPart, 'startup-page-banner')}
+        {header('startup-page-banner', signInPart)}
 
         <div class='flex-grow mx-6'>
           <span class='text-2xl italic'>Nothing to see here (yet)</span>
