@@ -125,8 +125,8 @@ export default {
   daisyui: {
     styled: true,
 
-    themes: ['autumn', 'luxury'], // fantasy 1, pastel 2, autumn 3
-    darkTheme: 'luxury',
+    themes: ['autumn', 'coffee'], // fantasy 1, pastel 2, autumn 3, dark: luxury, coffee
+    darkTheme: 'coffee',
     base: true,
     utils: true,
     logs: true,
