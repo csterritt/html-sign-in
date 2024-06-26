@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { Fragment } from 'hono/jsx'
 
 import { Bindings } from './bindings'
 import { ROOT_PATH, SIGN_IN_PATH } from './constants'
@@ -15,15 +16,15 @@ const signInPart = (
 export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) => {
   app.get(ROOT_PATH, (c) => {
     return c.render(
-      <div class='flex flex-col grow' data-testid='startup-page-banner'>
-        {header(signInPart)}
+      <Fragment>
+        {header(signInPart, 'startup-page-banner')}
 
         <div class='flex-grow mx-6'>
           <span class='text-2xl italic'>Nothing to see here (yet)</span>
         </div>
 
         {footer()}
-      </div>
+      </Fragment>
     )
   })
 }

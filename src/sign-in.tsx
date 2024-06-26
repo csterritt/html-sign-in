@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { Fragment } from 'hono/jsx'
 
 import { Bindings } from './bindings'
 import { ROOT_PATH, SIGN_IN_PATH } from './constants'
@@ -7,8 +8,8 @@ import { footer, header } from './partials/header'
 export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
   app.get(SIGN_IN_PATH, (c) => {
     return c.render(
-      <div class='flex flex-col grow' data-testid='sign-in-page-banner'>
-        {header()}
+      <Fragment>
+        {header(null, 'sign-in-page-banner')}
 
         <div class='flex-grow mx-6'>
           <div class='card bg-gray-100 dark:bg-gray-700 relative'>
@@ -48,7 +49,7 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
         </div>
 
         {footer()}
-      </div>
+      </Fragment>
     )
   })
 }
