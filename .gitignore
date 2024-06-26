@@ -13,3 +13,7 @@ alg.info
 
 # Derived files
 public/static/style-XXXXXX.css
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

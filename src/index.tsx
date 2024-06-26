@@ -13,12 +13,21 @@ app.use(renderer)
 app.get('/', (c) => {
   return c.render(
     <div class='flex flex-col grow'>
-      <div class='flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content textarea-accent'>
+      <div
+        class='flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content textarea-accent'
+        data-testid='page-banner'
+      >
         <div class='px-2 mx-2'>
           <span class='text-lg font-bold md:hidden'>SI-EX</span>
           <span class='text-lg font-bold hidden md:inline-block'>
             Sign In Example
           </span>
+        </div>
+
+        <div class='px-2 mx-2'>
+          <a class='btn btn-secondary' data-testid='sign-in-link'>
+            Sign In
+          </a>
         </div>
       </div>
 
