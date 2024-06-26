@@ -7,6 +7,7 @@ test('has banner', async ({ page }) => {
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'startup-page-banner')
+  await findItemByTestId(page, 'footer-banner')
 })
 
 test('has sign in link', async ({ page }) => {

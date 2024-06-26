@@ -8,11 +8,14 @@ test('click sign in, page has banner', async ({ page }) => {
   // Expect there to be the right banner
   await findItemByTestId(page, 'startup-page-banner')
   await clickLink(page, 'sign-in-link')
+  await findItemByTestId(page, 'footer-banner')
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'sign-in-page-banner')
   await clickLink(page, 'cancel-sign-in-link')
+  await findItemByTestId(page, 'footer-banner')
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'startup-page-banner')
+  await findItemByTestId(page, 'footer-banner')
 })
