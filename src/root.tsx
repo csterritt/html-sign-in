@@ -3,9 +3,9 @@ import { Fragment } from 'hono/jsx'
 
 import { Bindings } from './bindings'
 import { ROOT_PATH, SIGN_IN_PATH } from './constants'
-import { footer, header } from './partials/header'
+import { HeaderElement, footer, header } from './partials/header'
 
-const signInPart = (
+const signInPart: HeaderElement = (
   <div class='px-2 mx-2'>
     <a href={SIGN_IN_PATH} class='btn btn-secondary' data-testid='sign-in-link'>
       Sign In
