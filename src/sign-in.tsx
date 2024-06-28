@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { Fragment } from 'hono/jsx'
 
 import { Bindings } from './bindings'
-import { ROOT_PATH, SIGN_IN_PATH } from './constants'
+import { ROOT_PATH, SIGN_IN_PATH, SUBMIT_EMAIL_PATH } from './constants'
 import { footer, header } from './partials/header'
 
 export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
@@ -16,19 +16,18 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
             <div class='card-body'>
               <h3 class='card-title'>Sign In</h3>
 
-              <section>
-                <div>
-                  <label class='label'>
-                    <span class='label-text'>Email address:</span>
-                  </label>
+              <form action={SUBMIT_EMAIL_PATH} method='POST'>
+                <label class='label'>
+                  <span class='label-text'>Email address:</span>
+                </label>
 
-                  <input
-                    type='email'
-                    placeholder='email'
-                    class='input input-bordered input-primary w-full max-w-xs'
-                    data-testid='email-input'
-                  />
-                </div>
+                <input
+                  id='email'
+                  type='email'
+                  placeholder='email'
+                  class='input input-bordered input-primary w-full max-w-xs'
+                  data-testid='email-input'
+                />
 
                 <div class='card-actions justify-between mt-4'>
                   <a
@@ -41,15 +40,31 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
 
                   <button class='btn btn-accent'>Register a new account</button>
 
-                  <button class='btn btn-primary'>Submit</button>
+                  <input type='submit' class='btn btn-primary' />
                 </div>
-              </section>
+              </form>
             </div>
           </div>
         </div>
 
         {footer()}
       </Fragment>
+    )
+  })
+
+  app.post(SUBMIT_EMAIL_PATH, async (c) => {
+    const contentType = c.req.header('content-type')
+    console.log(`contentType is`, contentType)
+    console.log(`... as string, contentType is ${JSON.stringify(contentType)}`)
+    const body = await c.req.parseBody()
+    console.log(`body is`, body)
+    console.log(`... as string, body is ${JSON.stringify(body)}`)
+    return c.json(
+      {
+        message: 'Created!',
+        body,
+      },
+      201
     )
   })
 }
