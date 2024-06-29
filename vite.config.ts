@@ -8,6 +8,15 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+
+    rollupOptions: {
+      input: {
+        index: 'src/index.html',
+        signIn: 'src/sign-in.html',
+        // ...
+        // List all files you want in your build
+      },
+    },
   },
   server: { port: 3000 },
 })

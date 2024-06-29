@@ -4,8 +4,7 @@
     "dev": "./run-dev.sh",
     "build": "./prod-build.sh",
     "build-vite": "vite build",
-    "preview": "wrangler pages dev dist",
-    "deploy": "$npm_execpath run build && wrangler pages deploy dist"
+    "preview": "wrangler pages dev dist"
   },
   "dependencies": {
     "cookie": "^0.6.0",
