@@ -1,0 +1,20 @@
+{% macro headerInfo(testId, buttonContent) %}
+<html>
+  <head>
+    <link href="./style.css" rel="stylesheet" />
+    <title>HTML Sign In</title>
+  </head>
+
+  <body
+    class="font-slabserif h-full min-h-screen flex flex-col justify-between md:mx-auto max-w-7xl pb-3 bg-gray-300 dark:bg-gray-900"
+  >
+    {% import "src/partials/header.html" as header %}
+    <!-- -->
+    {{ header.headerInfo(testId, buttonContent) }}
+    <!-- header testId='sign-in-page-banner' -->
+    {% block content %} {% endblock %}
+    <!-- -->
+    {% include "src/partials/footer.html" %}
+  </body>
+</html>
+{% endmacro %}

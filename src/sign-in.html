@@ -1,39 +1,37 @@
-{header('sign-in-page-banner')}
+{% import "src/layout.html" as layout %}
+<!-- -->
+{{ layout.headerInfo('sign-in-page-banner', '') }}
+<!-- -->
+{% block content %}
+<div class="flex-grow mx-6">
+  <div class="card bg-gray-100 dark:bg-gray-700 relative">
+    <div class="card-body">
+      <h3 class="card-title">Sign In</h3>
 
-<div class='flex-grow mx-6'>
-  <div class='card bg-gray-100 dark:bg-gray-700 relative'>
-    <div class='card-body'>
-      <h3 class='card-title'>Sign In</h3>
-
-      <form action={SUBMIT_EMAIL_PATH} method='POST'>
-        <label class='label'>
-          <span class='label-text'>Email address:</span>
+      <form action="/submit-email" method="POST">
+        <label class="label">
+          <span class="label-text">Email address:</span>
         </label>
 
         <input
-          id='email'
-          type='email'
-          placeholder='email'
-          class='input input-bordered input-primary w-full max-w-xs'
-          data-testid='email-input'
+          id="email"
+          type="email"
+          placeholder="email"
+          class="input input-bordered input-primary w-full max-w-xs"
+          data-testid="email-input"
         />
 
-        <div class='card-actions justify-between mt-4'>
-          <a
-            href={ROOT_PATH}
-            class='btn btn-ghost'
-            data-testid='cancel-sign-in-link'
-          >
+        <div class="card-actions justify-between mt-4">
+          <a href="/" class="btn btn-ghost" data-testid="cancel-sign-in-link">
             Cancel sign in
           </a>
 
-          <button class='btn btn-accent'>Register a new account</button>
+          <button class="btn btn-accent">Register a new account</button>
 
-          <input type='submit' class='btn btn-primary' />
+          <input type="submit" class="btn btn-primary" />
         </div>
       </form>
     </div>
   </div>
 </div>
-
-{footer()}
+{% endblock %}

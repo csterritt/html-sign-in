@@ -1,15 +1,10 @@
-import { resolve } from 'path'
 import { defineConfig } from 'vite'
 
-import handlebars from 'vite-plugin-handlebars'
+import nunjucks from 'vite-plugin-nunjucks'
 
 export default defineConfig({
   root: 'src',
-  plugins: [
-    handlebars({
-      partialDirectory: resolve(__dirname, 'src/partials'),
-    }),
-  ],
+  plugins: [nunjucks()],
   build: {
     outDir: '../dist',
     emptyOutDir: true,
