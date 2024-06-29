@@ -14,7 +14,7 @@ def copy_to_temp_cleaning(file_name, out_filename)
         File.open(file_name, "r") do |inf|
             inf.each_line do |line|
             case line
-                when /PRODUCTION:REMOVE\s*$/
+                when /PRODUCTION:REMOVE/
                     next
 
                 when /PRODUCTION:REMOVE-NEXT-LINE/
@@ -24,7 +24,7 @@ def copy_to_temp_cleaning(file_name, out_filename)
                 when /PRODUCTION:UNCOMMENT/
                     if line =~ /^(\s*)\/\/(\s*\S.*)\/\/\s*PRODUCTION:UNCOMMENT\s*$/
                         out.puts "#{$1}#{$2}"
-                    elsif line =~ /^(\s*){#(\s*\S.*)\s*PRODUCTION:UNCOMMENT\s*#}$/
+                    elsif line =~ /^(\s*){#(\s*\S.*?)\s*PRODUCTION:UNCOMMENT\s*#}$/
                         out.puts "#{$1}#{$2}"
                     else
                         out.puts line
