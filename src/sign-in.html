@@ -1,8 +1,11 @@
-{% import "src/layout.html" as layout %}
+{% extends "src/layout.html" %}
 <!-- -->
-{{ layout.headerInfo('sign-in-page-banner', '') }}
+{% import "src/partials/header.html" as header %}
 <!-- -->
 {% block content %}
+<!-- -->
+{{ header.headerInfo('sign-in-page-banner', '') }}
+<!-- -->
 <div class="flex-grow mx-6">
   <div class="card bg-gray-100 dark:bg-gray-700 relative">
     <div class="card-body">
