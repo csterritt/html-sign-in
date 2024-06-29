@@ -5,8 +5,8 @@ trap cleanup SIGINT SIGTERM ERR EXIT
 
 cleanup() {
   trap - SIGINT SIGTERM ERR EXIT
-#  pm2 delete tw-build
+  pm2 delete run-wrang
 }
 
-#pm2 start --name tw-build "./node_modules/.bin/tailwindcss --watch -o public/static/style-XXXXXX.css --content './src/**/*.{js,ts,jsx,tsx}'"
-vite
+pm2 start --name run-wrang "npx wrangler pages dev --compatibility-date=2023-10-02"
+./node_modules/.bin/vite
