@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['renderer.tsx', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ['index.html', './src/**/*.{html, css}'],
   theme: {
     fontFamily: {
       // https://github.com/system-fonts/modern-font-stacks

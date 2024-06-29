@@ -2,19 +2,17 @@
   "type": "module",
   "scripts": {
     "dev": "./run-dev.sh",
-    "build": "rm -rf dist ; npx tailwindcss -m -o public/static/style-XXXXXX.css --content './src/**/*.{js,ts,jsx,tsx}' ; vite build ; node timestamp-build-filenames.js",
+    "build": "./prod-build.sh",
+    "build-vite": "vite build",
     "preview": "wrangler pages dev dist",
     "deploy": "$npm_execpath run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "cookie": "^0.6.0",
-    "hono": "^4.4.9",
     "http-status-codes": "^2.3.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
-    "@hono/vite-cloudflare-pages": "^0.2.4",
-    "@hono/vite-dev-server": "^0.12.0",
     "@playwright/test": "^1.45.0",
     "@types/cookie": "^0.6.0",
     "@types/node": "^20.14.9",
