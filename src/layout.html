@@ -1,17 +1,15 @@
 <html lang="en">
-<head>
-  <!-- <link href="https://html-sign-in.pages.dev/style.css" rel="stylesheet" /> PRODUCTION:UNCOMMENT -->
-  {# PRODUCTION:REMOVE-NEXT-LINE #}
-  <link href="http://localhost:3000/style.css" rel="stylesheet" />
-  <title>HTML Sign In</title>
-</head>
+  <head>
+    <link href="./style.css" rel="stylesheet" />
+    <title>HTML Sign In</title>
+  </head>
 
-<body
-  class="font-slabserif h-full min-h-screen flex flex-col justify-between md:mx-auto max-w-7xl pb-3 bg-gray-300 dark:bg-gray-900"
->
-<!-- -->
-{% block content %}{% endblock %}
-<!-- -->
-{% include "src/partials/footer.html" %}
-</body>
+  <body
+    class="font-slabserif h-full min-h-screen flex flex-col justify-between md:mx-auto max-w-7xl pb-3 bg-gray-300 dark:bg-gray-900"
+  >
+    <!-- -->
+    {% block content %}{% endblock %}
+    <!-- -->
+    {% include "src/partials/footer.html" %}
+  </body>
 </html>
