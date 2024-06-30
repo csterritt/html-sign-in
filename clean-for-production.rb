@@ -10,30 +10,30 @@ end
 
 def copy_to_temp_cleaning(file_name, out_filename)
     File.open(out_filename, "w") do |out|
-        state = :KEEP
+        @state = :KEEP
         File.open(file_name, "r") do |inf|
             inf.each_line do |line|
-            case line
-                when /PRODUCTION:REMOVE/
-                    next
+                case line
+                    when /PRODUCTION:REMOVE-NEXT-LINE/
+                        @state = :SKIP
+                        next
 
-                when /PRODUCTION:REMOVE-NEXT-LINE/
-                    state = :SKIP
-                    next
+                    when /PRODUCTION:REMOVE/
+                        next
 
-                when /PRODUCTION:UNCOMMENT/
-                    if line =~ /^(\s*)\/\/(\s*\S.*)\/\/\s*PRODUCTION:UNCOMMENT\s*$/
-                        out.puts "#{$1}#{$2}"
-                    elsif line =~ /^(\s*){#(\s*\S.*?)\s*PRODUCTION:UNCOMMENT\s*#}$/
-                        out.puts "#{$1}#{$2}"
-                    elsif line =~ /^(\s*)<!--(\s*\S.*?)\s*PRODUCTION:UNCOMMENT\s*-->$/
-                        out.puts "#{$1}#{$2}"
-                    else
-                        out.puts line
-                    end
+                    when /PRODUCTION:UNCOMMENT/
+                        if line =~ /^(\s*)\/\/(\s*\S.*)\/\/\s*PRODUCTION:UNCOMMENT\s*$/
+                            out.puts "#{$1}#{$2}"
+                        elsif line =~ /^(\s*){#(\s*\S.*?)\s*PRODUCTION:UNCOMMENT\s*#}$/
+                            out.puts "#{$1}#{$2}"
+                        elsif line =~ /^(\s*)<!--(\s*\S.*?)\s*PRODUCTION:UNCOMMENT\s*-->\s*$/
+                            out.puts "#{$1}#{$2}"
+                        else
+                            out.puts line
+                        end
                 else
-                    out.puts line unless state == :SKIP
-                    state = :KEEP
+                    out.puts line unless @state == :SKIP
+                    @state = :KEEP
                 end
             end
         end
