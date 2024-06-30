@@ -12,7 +12,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: 'src/index.html',
-        signIn: 'src/sign-in.html',
+        signIn: 'src/auth/sign-in.html',
         // ...
         // List all files you want in your build
       },
