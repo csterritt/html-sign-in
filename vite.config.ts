@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite'
 
-import nunjucks from 'vite-plugin-nunjucks'
-
 export default defineConfig({
   root: 'src',
-  plugins: [nunjucks()],
+  plugins: [],
   build: {
     outDir: '../dist',
     emptyOutDir: true,
