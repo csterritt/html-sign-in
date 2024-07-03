@@ -1,4 +1,4 @@
-export const onRequest = async (context: any) => {
+export const onRequest = async (context) => {
   const data = await context.request.formData()
   const code = data.get('code') || 'no code'
   return Response.json({

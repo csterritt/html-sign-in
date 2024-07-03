@@ -1,31 +1,13 @@
+import { html, HTMLResponse } from '@worker-tools/html'
 
-  <html lang="en">
-    <head>
-      <link href="https://html-sign-in.pages.dev/style.css" rel="stylesheet" />
-      <title>HTML Sign In</title>
-    </head>
+import { layout } from '../../layout.js'
+import { header } from '../../partials/header.js'
+import * as constants from '../../constants.js'
 
-    <body
-      class="font-slabserif h-full min-h-screen flex flex-col justify-between md:mx-auto max-w-7xl pb-3 bg-gray-200 dark:bg-gray-900"
-    >
-      
-      
-  <div
-    class="flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content"
-    data-testid="sign-in-page-banner"
-  >
-    <div class="px-2 mx-2">
-      <a href="https://html-sign-in.pages.dev/">
-        <span class="text-lg font-bold md:hidden">SI-EX</span>
-        <span class="text-lg font-bold hidden md:inline-block">
-          Sign In Example
-        </span>
-      </a>
-    </div>
-
-    
-  </div>
-
+const signIn = () =>
+  layout(
+    html`
+      ${header('sign-in-page-banner', '')}
       <!-- -->
       <div class="flex-grow mx-6">
         <div class="card bg-gray-100 dark:bg-gray-700 relative">
@@ -33,7 +15,7 @@
             <h3 class="card-title">Sign In</h3>
 
             <form
-              action="https://html-sign-in.pages.dev/api/auth/submit-email"
+              action="${constants.FUNCTION_SERVER_URL}/api/auth/submit-email"
               method="POST"
             >
               <label for="email" class="label">
@@ -70,15 +52,9 @@
           </div>
         </div>
       </div>
-    
-      <!-- -->
-      
-  <div class="mx-6" data-testid="footer-banner">
-    <span>Content copyright Chris Sterritt, 2024</span>
-    <span class="mx-2">-</span>
-    <span>V-6</span>
-  </div>
+    `,
+    '..'
+  )
 
-    </body>
-  </html>
-
+const output = await new HTMLResponse(signIn()).text()
+console.log(output)

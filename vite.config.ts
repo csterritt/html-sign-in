@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite'
 
-import nunjucks from 'vite-plugin-nunjucks'
-
 export default defineConfig({
   root: 'src',
-  plugins: [nunjucks()],
+  plugins: [],
   build: {
     outDir: '../dist',
     emptyOutDir: true,
@@ -13,9 +11,7 @@ export default defineConfig({
       input: {
         the404page: 'src/404.html',
         index: 'src/index.html',
-        protected: 'src/protected.html',
         signIn: 'src/auth/sign-in.html',
-        awaitCode: 'src/auth/await-code.html',
         // ...
         // List all files you want in your build
       },
