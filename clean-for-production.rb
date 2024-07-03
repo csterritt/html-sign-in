@@ -41,7 +41,9 @@ def copy_to_temp_cleaning(file_name, out_filename)
 end
 
 # ----
-check_git_modified_files()
+if ARGV.length == 0
+    check_git_modified_files()
+end
 
 res = `/opt/homebrew/bin/rg -l PRODUCTION | grep -v clean-for-production.rb`
 files = res.split(/[\r\n]+/)
