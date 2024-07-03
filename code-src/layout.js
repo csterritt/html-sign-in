@@ -1,11 +1,12 @@
 import { html } from '@worker-tools/html'
 
 import { footer } from './partials/footer.js'
+import * as constants from './constants.js'
 
 export const layout = (content) => html`
   <html lang="en">
     <head>
-      <link href="./style.css" rel="stylesheet" />
+      <link href="${constants.SERVER_URL}/style.css" rel="stylesheet" />
       <title>HTML Sign In</title>
     </head>
 

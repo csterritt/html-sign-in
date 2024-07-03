@@ -1,7 +1,8 @@
 import { html, HTMLResponse } from '@worker-tools/html'
 
-import { layout } from './layout.js'
-import { header } from './partials/header.js'
+import { layout } from '../layout.js'
+import { header } from '../partials/header.js'
+import * as constants from '../constants.js'
 
 const index = () =>
   layout(html`
@@ -9,7 +10,7 @@ const index = () =>
       'startup-page-banner',
       html`
         <a
-          href="/auth/sign-in"
+          href="${constants.SERVER_URL}/auth/sign-in"
           class="btn btn-ghost mx-2"
           data-testid="sign-in-link"
           >Sign in</a
@@ -21,15 +22,8 @@ const index = () =>
       <h3 class="text-2xl italic">Welcome!</h3>
       <p>
         The
-        <a href="/protected" class="link-secondary hover:underline"
-          >Protected Page</a
-        >.
-      </p>
-
-      <p>
-        The
         <a
-          href="http://localhost:8788/api/testpage"
+          href="${constants.FUNCTION_SERVER_URL}/api/testpage"
           class="link-secondary hover:underline"
           >Test Page</a
         >.
