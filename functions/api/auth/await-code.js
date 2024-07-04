@@ -6,7 +6,7 @@ const footer = () => `
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-8</span>
+    <span>V-10</span>
   </div>
 `;
 
@@ -15,13 +15,16 @@ const footer = () => `
 const SERVER_URL = 'http://localhost:3000'; // PRODUCTION:REMOVE
 // export const SERVER_URL = 'https://html-sign-in.pages.dev' // PRODUCTION:UNCOMMENT
 
-const ASSET_SERVER_URL = 'http://localhost:3000'; // PRODUCTION:REMOVE
-// export const ASSET_SERVER_URL = '' // PRODUCTION:UNCOMMENT
+const STANDARD_HEADERS = {
+  'Content-Type': 'text/html; charset=utf-8',
+};
 
 const layout = (content) => `
   <html lang="en">
     <head>
-      <link href="${ASSET_SERVER_URL}/style.css" rel="stylesheet" />
+      <!-- PRODUCTION:REMOVE-NEXT-LINE -->
+      <link href="${SERVER_URL}/style.css" rel="stylesheet" />
+      <!-- <link href="/style.css" rel="stylesheet" /> PRODUCTION:UNCOMMENT -->
       <title>HTML Sign In</title>
     </head>
 
@@ -63,6 +66,6 @@ export const onRequest = async (context) => {  const cookies = cookie.parse(cont
     </div>
   `;
 
-  return new Response(layout(content))
+  return new Response(layout(content), { headers: STANDARD_HEADERS })
 };
 

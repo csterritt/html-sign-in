@@ -4,7 +4,9 @@ import * as constants from './constants.js'
 export const layout = (content) => `
   <html lang="en">
     <head>
-      <link href="${constants.ASSET_SERVER_URL}/style.css" rel="stylesheet" />
+      <!-- PRODUCTION:REMOVE-NEXT-LINE -->
+      <link href="${constants.SERVER_URL}/style.css" rel="stylesheet" />
+      <!-- <link href="/style.css" rel="stylesheet" /> PRODUCTION:UNCOMMENT -->
       <title>HTML Sign In</title>
     </head>
 
