@@ -1,11 +1,10 @@
-import { html, HTMLResponse } from '@worker-tools/html'
 import cookie from 'cookie'
 
 import { layout } from '../../layout.js'
 import { header } from '../../partials/header.js'
 
 export const onRequest = async (context) => {
-  const content = html`
+  const content = `
     ${header('testpage-banner')}
 
     <div class="mx-6">
@@ -20,6 +19,5 @@ export const onRequest = async (context) => {
   })
 
   const headers = { 'Set-Cookie': cookies }
-  const page = await new HTMLResponse(output, { headers })
-  return page
+  return new Response(output, { headers })
 }

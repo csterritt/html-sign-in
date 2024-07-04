@@ -1,9 +1,7 @@
-import { html } from '@worker-tools/html'
-
 import { footer } from './partials/footer.js'
 import * as constants from './constants.js'
 
-export const layout = (content) => html`
+export const layout = (content) => `
   <html lang="en">
     <head>
       <link href="${constants.ASSET_SERVER_URL}/style.css" rel="stylesheet" />

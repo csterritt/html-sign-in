@@ -1,13 +1,11 @@
-import { html, HTMLResponse } from '@worker-tools/html'
-
 import { layout } from '../../layout.js'
 import { header } from '../../partials/header.js'
 import * as constants from '../../constants.js'
 
 const signIn = () =>
   layout(
-    html`
-      ${header('sign-in-page-banner', '')}
+    `
+      ${header('sign-in-page-banner')}
       <!-- -->
       <div class="flex-grow mx-6">
         <div class="card bg-gray-100 dark:bg-gray-700 relative">
@@ -56,5 +54,5 @@ const signIn = () =>
     '..'
   )
 
-const output = await new HTMLResponse(signIn()).text()
+const output = signIn()
 console.log(output)
