@@ -20,5 +20,6 @@ export const onRequest = async (context) => {
   })
 
   const headers = { 'Set-Cookie': cookies }
-  return new HTMLResponse(output, { headers })
+  const page = await new HTMLResponse(output, { headers })
+  return page
 }
