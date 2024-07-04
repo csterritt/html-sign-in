@@ -7,16 +7,18 @@ const footer = () => html.html`
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-6</span>
+    <span>V-7</span>
   </div>
 `;
 
-const SERVER_URL = 'https://html-sign-in.pages.dev';
+const SERVER_URL = 'https://html-sign-in.pages.dev'; 
+
+ const ASSET_SERVER_URL = '';
 
 const layout = (content) => html.html`
   <html lang="en">
     <head>
-      <link href="${SERVER_URL}/style.css" rel="stylesheet" />
+      <link href="${ASSET_SERVER_URL}/style.css" rel="stylesheet" />
       <title>HTML Sign In</title>
     </head>
 
