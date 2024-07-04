@@ -6,13 +6,11 @@ const footer = () => `
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-10</span>
+    <span>V-11</span>
   </div>
 `;
 
 const SERVER_URL = 'https://html-sign-in.pages.dev'; 
-
- const ASSET_SERVER_URL = ''; 
 
 const STANDARD_HEADERS = {
   'Content-Type': 'text/html; charset=utf-8',
@@ -21,7 +19,7 @@ const STANDARD_HEADERS = {
 const layout = (content) => `
   <html lang="en">
     <head>
-      <link href="${ASSET_SERVER_URL}/style.css" rel="stylesheet" />
+       <link href="/style.css" rel="stylesheet" />
       <title>HTML Sign In</title>
     </head>
 
