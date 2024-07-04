@@ -7,12 +7,10 @@
     "preview": "wrangler pages dev dist"
   },
   "dependencies": {
-    "@worker-tools/html": "^2.0.0-pre.13",
     "cookie": "^0.6.0",
     "http-status-codes": "^2.3.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240403.0",
     "@playwright/test": "^1.45.0",
     "@types/cookie": "^0.6.0",
     "@types/node": "^20.14.9",

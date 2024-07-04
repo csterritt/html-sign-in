@@ -1,8 +1,6 @@
-import { html } from '@worker-tools/html'
-
 import * as constants from '../constants.js'
 
-export const header = (testId, buttonContent = '') => html`
+export const header = (testId, buttonContent = '') => `
   <div
     class="flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content"
     data-testid="${testId}"

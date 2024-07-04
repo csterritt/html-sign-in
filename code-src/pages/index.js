@@ -1,14 +1,12 @@
-import { html, HTMLResponse } from '@worker-tools/html'
-
 import { layout } from '../layout.js'
 import { header } from '../partials/header.js'
 import * as constants from '../constants.js'
 
 const index = () =>
-  layout(html`
+  layout(`
     ${header(
       'startup-page-banner',
-      html`
+      `
         <a
           href="${constants.SERVER_URL}/auth/sign-in"
           class="btn btn-ghost mx-2"
@@ -31,5 +29,5 @@ const index = () =>
     </main>
   `)
 
-const output = await new HTMLResponse(index()).text()
+const output = index()
 console.log(output)

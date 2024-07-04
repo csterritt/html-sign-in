@@ -1,13 +1,12 @@
 'use strict';
 
-var html = require('@worker-tools/html');
 var cookie = require('cookie');
 
-const footer = () => html.html`
+const footer = () => `
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-8</span>
+    <span>V-9</span>
   </div>
 `;
 
@@ -15,7 +14,7 @@ const SERVER_URL = 'https://html-sign-in.pages.dev';
 
  const ASSET_SERVER_URL = '';
 
-const layout = (content) => html.html`
+const layout = (content) => `
   <html lang="en">
     <head>
       <link href="${ASSET_SERVER_URL}/style.css" rel="stylesheet" />
@@ -32,7 +31,7 @@ const layout = (content) => html.html`
   </html>
 `;
 
-const header = (testId, buttonContent = '') => html.html`
+const header = (testId, buttonContent = '') => `
   <div
     class="flex flex-row items-center justify-between min-h-16 mb-2 rounded-b-lg md:mx-4 shadow-lg bg-primary text-primary-content dark:bg-accent dark:text-accent-content"
     data-testid="${testId}"
@@ -52,7 +51,7 @@ const header = (testId, buttonContent = '') => html.html`
 
 export const onRequest = async (context) => {  const cookies = cookie.parse(context.request?.headers?.get('cookie')) || {};
   const emailSent = cookies['email'] || 'no email';
-  const content = html.html`
+  const content = `
     ${header('testpage-banner')}
 
     <div class="mx-6">
@@ -60,6 +59,6 @@ export const onRequest = async (context) => {  const cookies = cookie.parse(cont
     </div>
   `;
 
-  return new html.HTMLResponse(layout(content))
+  return new Response(layout(content))
 };
 
