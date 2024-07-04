@@ -23,6 +23,7 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
 
                 <input
                   id='email'
+                  name='email'
                   type='email'
                   placeholder='email'
                   class='input input-bordered input-primary w-full max-w-xs'
