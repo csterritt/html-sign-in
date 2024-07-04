@@ -7,7 +7,7 @@ const footer = () => html.html`
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-5</span>
+    <span>V-6</span>
   </div>
 `;
 
@@ -16,10 +16,13 @@ const footer = () => html.html`
 const SERVER_URL = 'http://localhost:3000'; // PRODUCTION:REMOVE
 // export const SERVER_URL = 'https://html-sign-in.pages.dev' // PRODUCTION:UNCOMMENT
 
+const ASSET_SERVER_URL = 'http://localhost:3000'; // PRODUCTION:REMOVE
+// export const ASSET_SERVER_URL = '' // PRODUCTION:UNCOMMENT
+
 const layout = (content) => html.html`
   <html lang="en">
     <head>
-      <link href="${SERVER_URL}/style.css" rel="stylesheet" />
+      <link href="${ASSET_SERVER_URL}/style.css" rel="stylesheet" />
       <title>HTML Sign In</title>
     </head>
 
