@@ -2,6 +2,7 @@ import cookie from 'cookie'
 
 import { layout } from '../../layout.js'
 import { header } from '../../partials/header.js'
+import * as constants from '../../constants.js'
 
 export const onRequest = async (context) => {
   const content = `
@@ -18,6 +19,9 @@ export const onRequest = async (context) => {
     maxAge: 60 * 60 * 24 * 7, // 1 week
   })
 
-  const headers = { 'Set-Cookie': cookies }
+  const headers = {
+    ...constants.STANDARD_HEADERS,
+    'Set-Cookie': cookies,
+  }
   return new Response(output, { headers })
 }

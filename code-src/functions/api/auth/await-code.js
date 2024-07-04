@@ -2,6 +2,7 @@ import cookie from 'cookie'
 
 import { layout } from '../../../layout.js'
 import { header } from '../../../partials/header.js'
+import * as constants from '../../../constants.js'
 
 export const onRequest = async (context) => {
   const cookies = cookie.parse(context.request?.headers?.get('cookie')) || {}
@@ -14,5 +15,5 @@ export const onRequest = async (context) => {
     </div>
   `
 
-  return new Response(layout(content))
+  return new Response(layout(content), { headers: constants.STANDARD_HEADERS })
 }

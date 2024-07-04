@@ -10,3 +10,7 @@ export const SERVER_URL = 'http://localhost:3000' // PRODUCTION:REMOVE
 
 export const ASSET_SERVER_URL = 'http://localhost:3000' // PRODUCTION:REMOVE
 // export const ASSET_SERVER_URL = '' // PRODUCTION:UNCOMMENT
+
+export const STANDARD_HEADERS = {
+  'Content-Type': 'text/html; charset=utf-8',
+}
