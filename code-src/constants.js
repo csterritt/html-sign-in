@@ -7,3 +7,7 @@ export const SUBMIT_EMAIL_PATH = '/auth/submit-email'
  export const SERVER_URL = 'https://html-sign-in.pages.dev' 
 
  export const ASSET_SERVER_URL = '' 
+
+export const STANDARD_HEADERS = {
+  'Content-Type': 'text/html; charset=utf-8',
+}

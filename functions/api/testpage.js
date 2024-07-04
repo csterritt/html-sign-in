@@ -6,13 +6,17 @@ const footer = () => `
   <div class="mx-6" data-testid="footer-banner">
     <span>Content copyright Chris Sterritt, 2024</span>
     <span class="mx-2">-</span>
-    <span>V-9</span>
+    <span>V-10</span>
   </div>
 `;
 
 const SERVER_URL = 'https://html-sign-in.pages.dev'; 
 
- const ASSET_SERVER_URL = '';
+ const ASSET_SERVER_URL = ''; 
+
+const STANDARD_HEADERS = {
+  'Content-Type': 'text/html; charset=utf-8',
+};
 
 const layout = (content) => `
   <html lang="en">
@@ -63,7 +67,10 @@ export const onRequest = async (context) => {  const content = `
     maxAge: 60 * 60 * 24 * 7, // 1 week
   });
 
-  const headers = { 'Set-Cookie': cookies };
+  const headers = {
+    ...STANDARD_HEADERS,
+    'Set-Cookie': cookies,
+  };
   return new Response(output, { headers })
 };
 
