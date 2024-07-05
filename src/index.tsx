@@ -3,7 +3,6 @@ import { LinearRouter } from 'hono/router/linear-router'
 
 import { Bindings } from './bindings'
 import { renderer } from './renderer'
-import { setupRootPath } from './root'
 import { setupSignInPaths } from './sign-in'
 
 const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
@@ -11,7 +10,6 @@ const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
 })
 
 app.use(renderer)
-setupRootPath(app)
 setupSignInPaths(app)
 
 export default app
