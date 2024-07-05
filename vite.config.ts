@@ -1,21 +1,15 @@
+import build from '@hono/vite-cloudflare-pages'
+import devServer from '@hono/vite-dev-server'
+import adapter from '@hono/vite-dev-server/cloudflare'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  root: 'src',
-  plugins: [],
-  build: {
-    outDir: '../dist',
-    emptyOutDir: true,
-
-    rollupOptions: {
-      input: {
-        the404page: 'src/404.html',
-        index: 'src/index.html',
-        signIn: 'src/auth/sign-in.html',
-        // ...
-        // List all files you want in your build
-      },
-    },
-  },
+  plugins: [
+    build(),
+    devServer({
+      adapter,
+      entry: 'src/index.tsx',
+    }),
+  ],
   server: { port: 3000 },
 })

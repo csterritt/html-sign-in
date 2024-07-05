@@ -1,2 +1,2 @@
 #!/bin/bash
-./run-dev.sh
+npm run dev
