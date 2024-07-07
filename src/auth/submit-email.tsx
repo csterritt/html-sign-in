@@ -1,9 +1,10 @@
 import { Hono } from 'hono'
 
-import { AWAIT_CODE_PATH, SUBMIT_EMAIL_PATH } from '../constants'
-import { Bindings, ForwardOptions } from '../bindings'
-import { isExistingEmail } from '../db-access'
+import { SUBMIT_EMAIL_PATH } from '../constants'
+import { Bindings } from '../bindings'
 import { buildSignInPage } from '../page-builders/buildSignInPage'
+import { buildAwaitCodePage } from '../page-builders/buildAwaitCodePage'
+import { findPersonByEmail } from '../db/session-db-access'
 
 type SubmitEmailBody = {
   email?: string
@@ -15,8 +16,9 @@ export const setupSubmitEmailPath = (app: Hono<{ Bindings: Bindings }>) => {
     const body: SubmitEmailBody = await c.req.parseBody()
 
     if (body.email !== undefined && body.email.trim().length > 0) {
-      if (isExistingEmail(body.email)) {
-        return new Response()
+      const person = await findPersonByEmail(c, body.email, true)
+      if (person != null && person.length > 0 && person[0]?.Id > 0) {
+        return buildAwaitCodePage(body.email)(c)
       }
 
       return buildSignInPage({

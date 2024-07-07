@@ -21,3 +21,11 @@ export const verifyAlert = async (page: Page, expectedText: string) => {
   return await expect(page.getByRole('alert')).toHaveText(expectedText)
   // return page.getByTestId('alert-close').click()
 }
+
+export const verifyContentByTestId = async (
+  page: Page,
+  testId: string,
+  expectedText: string
+) => {
+  return expect(page.getByTestId(testId)).toHaveText(expectedText)
+}

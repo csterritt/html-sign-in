@@ -5,6 +5,7 @@ import {
   fillInput,
   findItemByTestId,
   verifyAlert,
+  verifyContentByTestId,
 } from '../support/finders'
 
 test('submit a known email', async ({ page }) => {
@@ -17,8 +18,9 @@ test('submit a known email', async ({ page }) => {
   await findItemByTestId(page, 'await-code-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(
+  await verifyContentByTestId(
     page,
+    'please-enter-code-message',
     `Please enter the code sent to fredfred@team439980.testinator.com`
   )
 })
