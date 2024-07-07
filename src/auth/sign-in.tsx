@@ -1,9 +1,7 @@
-import { Hono } from 'hono'
-
-import { Bindings } from '../bindings'
+import { HonoApp } from '../bindings'
 import { SIGN_IN_PATH } from '../constants'
 import { buildSignInPage } from '../page-builders/buildSignInPage'
 
-export const setupSignInPath = (app: Hono<{ Bindings: Bindings }>) => {
+export const setupSignInPath = (app: HonoApp) => {
   app.get(SIGN_IN_PATH, buildSignInPage())
 }

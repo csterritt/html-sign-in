@@ -1,13 +1,12 @@
-import { Context } from 'hono'
 import { Fragment } from 'hono/jsx'
 import { addErrorIfAny } from './add-error-if-any'
 
 import { ROOT_PATH, SUBMIT_EMAIL_PATH } from '../constants'
 import { footer, header } from '../partials/header'
-import { Bindings, ForwardOptions } from '../bindings'
+import { ForwardOptions, LocalContext } from '../bindings'
 
 export const buildSignInPage =
-  (options?: ForwardOptions) => (c: Context<{ Bindings: Bindings }>) => {
+  (options?: ForwardOptions) => (c: LocalContext) => {
     return c.render(
       <Fragment>
         {header('sign-in-page-banner')}

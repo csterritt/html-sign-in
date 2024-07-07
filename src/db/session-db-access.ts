@@ -1,5 +1,7 @@
 import { getSessionId } from './get-session-id'
 import { runDatabaseAction } from './run-db-action'
+import { UNKNOWN_PERSON_ID } from '../constants'
+import { LocalContext } from '../bindings'
 
 export type SessionInformation = {
   Id: number
@@ -32,7 +34,7 @@ export type SessionOnly = {
 export type SessionDeleteList = SessionOnly[]
 
 export const getSessionInfoForSessionId = async (
-  context: any,
+  context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformationList>> => {
   return runDatabaseAction(
@@ -43,7 +45,7 @@ export const getSessionInfoForSessionId = async (
 }
 
 export const updateSessionContent = async (
-  context: any,
+  context: LocalContext,
   date: Date | null,
   content: object,
   sessionId: string
@@ -67,22 +69,26 @@ export const updateSessionContent = async (
 }
 
 export const findPersonByEmail = async (
-  context: any,
+  context: LocalContext,
   email: string,
   mustBeVerified: boolean
-) => {
+): Promise<number> => {
   let statement = 'select Id from HSIPeople where Email = ?'
   if (mustBeVerified) {
     statement += ' and IsVerified = 1'
   }
 
   const queryResults = await runDatabaseAction(context, statement, email)
+  let result = UNKNOWN_PERSON_ID
+  if (queryResults?.results?.length > 0) {
+    result = queryResults.results[0].Id
+  }
 
-  return queryResults?.results
+  return result
 }
 
 export const createNewSession = async (
-  context: any,
+  context: LocalContext,
   personId: number,
   sessionId: string,
   date: Date,
@@ -98,7 +104,10 @@ export const createNewSession = async (
   )
 }
 
-export const removeSessionFromDb = async (context: any, sessionId: string) => {
+export const removeSessionFromDb = async (
+  context: LocalContext,
+  sessionId: string
+) => {
   return runDatabaseAction(
     context,
     'delete from HSISession where Session = ?',
@@ -107,7 +116,7 @@ export const removeSessionFromDb = async (context: any, sessionId: string) => {
 }
 
 export const removeOldUserSessionsFromDb = async (
-  context: any,
+  context: LocalContext,
   userInfo: SessionInformation,
   tooOld: Date
 ): Promise<SessionQueryResults<SessionDeleteList>> => {
@@ -119,7 +128,7 @@ export const removeOldUserSessionsFromDb = async (
 }
 
 export const rememberUserSignedIn = async (
-  context: any,
+  context: LocalContext,
   sessionContent: object,
   sessionId: string
 ) => {
@@ -132,7 +141,7 @@ export const rememberUserSignedIn = async (
 }
 
 export const rememberUserCreated = async (
-  context: any,
+  context: LocalContext,
   sessionId: string,
   email: string,
   signUpCode: string
@@ -175,7 +184,7 @@ export const rememberUserCreated = async (
 }
 
 export const addNewUserWithEmailAndCode = async (
-  context: any,
+  context: LocalContext,
   email: string,
   signUpCode: string
 ) => {

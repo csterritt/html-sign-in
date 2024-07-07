@@ -1,14 +1,12 @@
-import { Context } from 'hono'
 import { Fragment } from 'hono/jsx'
 import { addErrorIfAny } from './add-error-if-any'
 
 import { SUBMIT_CODE_PATH } from '../constants'
 import { footer, header } from '../partials/header'
-import { Bindings, ForwardOptions } from '../bindings'
+import { ForwardOptions, LocalContext } from '../bindings'
 
 export const buildAwaitCodePage =
-  (email: string, options?: ForwardOptions) =>
-  (c: Context<{ Bindings: Bindings }>) => {
+  (email: string, options?: ForwardOptions) => (c: LocalContext) => {
     return c.render(
       <Fragment>
         {header('await-code-page-banner')}
