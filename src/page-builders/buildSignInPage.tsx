@@ -1,0 +1,69 @@
+import { Context } from 'hono'
+import { Fragment } from 'hono/jsx'
+import { html } from 'hono/html'
+
+import { ROOT_PATH, SUBMIT_EMAIL_PATH } from '../constants'
+import { footer, header } from '../partials/header'
+import { Bindings, ForwardOptions } from '../bindings'
+
+const addErrorIfAny = (options?: ForwardOptions) => {
+  if (options !== undefined && options.error !== undefined) {
+    return html` <div class="text-red-500" role="alert">${options.error}</div>`
+  } else {
+    return html``
+  }
+}
+
+export const buildSignInPage =
+  (options?: ForwardOptions) => (c: Context<{ Bindings: Bindings }>) => {
+    return c.render(
+      <Fragment>
+        {header('sign-in-page-banner')}
+
+        <div class='flex-grow mx-6'>
+          {addErrorIfAny(options)}
+
+          <div class='card bg-gray-100 dark:bg-gray-700 relative'>
+            <div class='card-body'>
+              <h3 class='card-title'>Sign In</h3>
+
+              <form action={SUBMIT_EMAIL_PATH} method='POST'>
+                <label class='label'>
+                  <span class='label-text'>Email address:</span>
+                </label>
+
+                <input
+                  id='email'
+                  name='email'
+                  type='email'
+                  placeholder='email'
+                  class='input input-bordered input-primary w-full max-w-xs'
+                  data-testid='email-input'
+                />
+
+                <div class='card-actions justify-between mt-4'>
+                  <a
+                    href={ROOT_PATH}
+                    class='btn btn-ghost'
+                    data-testid='cancel-sign-in-link'
+                  >
+                    Cancel sign in
+                  </a>
+
+                  <button class='btn btn-accent'>Register a new account</button>
+
+                  <input
+                    type='submit'
+                    class='btn btn-primary'
+                    data-testid='submit'
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {footer()}
+      </Fragment>
+    )
+  }

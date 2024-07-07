@@ -1,55 +1,9 @@
 import { Hono } from 'hono'
-import { Fragment } from 'hono/jsx'
 
-import { ROOT_PATH, SIGN_IN_PATH, SUBMIT_EMAIL_PATH } from '../constants'
-import { footer, header } from '../partials/header'
 import { Bindings } from '../bindings'
+import { SIGN_IN_PATH } from '../constants'
+import { buildSignInPage } from '../page-builders/buildSignInPage'
 
 export const setupSignInPath = (app: Hono<{ Bindings: Bindings }>) => {
-  app.get(SIGN_IN_PATH, (c) => {
-    return c.render(
-      <Fragment>
-        {header('sign-in-page-banner')}
-
-        <div class='flex-grow mx-6'>
-          <div class='card bg-gray-100 dark:bg-gray-700 relative'>
-            <div class='card-body'>
-              <h3 class='card-title'>Sign In</h3>
-
-              <form action={SUBMIT_EMAIL_PATH} method='POST'>
-                <label class='label'>
-                  <span class='label-text'>Email address:</span>
-                </label>
-
-                <input
-                  id='email'
-                  name='email'
-                  type='email'
-                  placeholder='email'
-                  class='input input-bordered input-primary w-full max-w-xs'
-                  data-testid='email-input'
-                />
-
-                <div class='card-actions justify-between mt-4'>
-                  <a
-                    href={ROOT_PATH}
-                    class='btn btn-ghost'
-                    data-testid='cancel-sign-in-link'
-                  >
-                    Cancel sign in
-                  </a>
-
-                  <button class='btn btn-accent'>Register a new account</button>
-
-                  <input type='submit' class='btn btn-primary' />
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {footer()}
-      </Fragment>
-    )
-  })
+  app.get(SIGN_IN_PATH, buildSignInPage())
 }

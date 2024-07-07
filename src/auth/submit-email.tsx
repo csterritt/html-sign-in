@@ -1,22 +1,31 @@
 import { Hono } from 'hono'
 
-import { SUBMIT_EMAIL_PATH } from '../constants'
-import { Bindings } from '../bindings'
+import { AWAIT_CODE_PATH, SUBMIT_EMAIL_PATH } from '../constants'
+import { Bindings, ForwardOptions } from '../bindings'
+import { isExistingEmail } from '../db-access'
+import { buildSignInPage } from '../page-builders/buildSignInPage'
+
+type SubmitEmailBody = {
+  email?: string
+}
 
 export const setupSubmitEmailPath = (app: Hono<{ Bindings: Bindings }>) => {
   app.post(SUBMIT_EMAIL_PATH, async (c) => {
-    const contentType = c.req.header('content-type')
-    console.log(`contentType is`, contentType)
-    console.log(`... as string, contentType is ${JSON.stringify(contentType)}`)
-    const body = await c.req.parseBody()
-    console.log(`body is`, body)
-    console.log(`... as string, body is ${JSON.stringify(body)}`)
-    return c.json(
-      {
-        message: 'Created!',
-        body,
-      },
-      201
-    )
+    // const contentType = c.req.header('content-type')
+    const body: SubmitEmailBody = await c.req.parseBody()
+
+    if (body.email !== undefined && body.email.trim().length > 0) {
+      if (isExistingEmail(body.email)) {
+        return new Response()
+      }
+
+      return buildSignInPage({
+        error: `Unknown email address: ${body.email}`,
+      })(c)
+    }
+
+    return buildSignInPage({
+      error: `You must supply an email address`,
+    })(c)
   })
 }
