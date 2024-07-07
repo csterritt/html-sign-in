@@ -10,13 +10,6 @@ CREATE TABLE HSIPeople (
 DROP INDEX IF EXISTS idx_hsipeople_email;
 CREATE UNIQUE INDEX idx_hsipeople_email ON HSIPeople(Email);
 
-DROP TABLE IF EXISTS HSIPersonName;
-CREATE TABLE HSIPersonName (
-    PersonId INTEGER PRIMARY KEY,
-    PersonName TEXT NOT NULL);
-DROP INDEX IF EXISTS idx_hsiperson_name;
-CREATE UNIQUE INDEX idx_hsiperson_name ON HSIPersonName(PersonName);
-
 DROP TABLE IF EXISTS HSISession;
 CREATE TABLE HSISession (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
