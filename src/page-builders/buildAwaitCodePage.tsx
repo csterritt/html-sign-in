@@ -1,4 +1,6 @@
 import { Fragment } from 'hono/jsx'
+import { setCookie } from 'hono/cookie'
+
 import { addErrorIfAny } from './add-error-if-any'
 
 import { SUBMIT_CODE_PATH } from '../constants'
@@ -7,6 +9,11 @@ import { ForwardOptions, LocalContext } from '../bindings'
 
 export const buildAwaitCodePage =
   (email: string, options?: ForwardOptions) => (c: LocalContext) => {
+    setCookie(c, 'email-sent', email, {
+      path: '/',
+      sameSite: 'Strict',
+    })
+
     return c.render(
       <Fragment>
         {header('await-code-page-banner')}
