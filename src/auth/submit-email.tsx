@@ -6,8 +6,8 @@ import {
   UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
-import { buildSignInPage } from '../page-builders/buildSignInPage'
-import { buildAwaitCodePage } from '../page-builders/buildAwaitCodePage'
+import { buildSignInPage } from '../page-builders/build-sign-in-page'
+import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
 import { findPersonByEmail } from '../db/session-db-access'
 
 type SubmitEmailBody = {
@@ -36,7 +36,7 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
     }
 
     return buildSignInPage('', {
-      error: `You must supply an email address`,
+      error: 'You must supply an email address',
     })(c)
   })
 }
