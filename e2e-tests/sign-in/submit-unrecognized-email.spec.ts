@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import {
   clickLink,
@@ -18,4 +18,8 @@ test('submit unrecognized email', async ({ page }) => {
 
   // Expect there to be an error message
   await verifyAlert(page, `Unknown email address: not.there@not.there`)
+
+  await expect(page.getByTestId('email-input')).toHaveValue(
+    'not.there@not.there'
+  )
 })

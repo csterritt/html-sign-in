@@ -1,4 +1,10 @@
-import { SUBMIT_EMAIL_PATH, UNKNOWN_PERSON_ID } from '../constants'
+import { setCookie } from 'hono/cookie'
+
+import {
+  EMAIL_SUBMITTED_COOKIE,
+  SUBMIT_EMAIL_PATH,
+  UNKNOWN_PERSON_ID,
+} from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import { buildSignInPage } from '../page-builders/buildSignInPage'
 import { buildAwaitCodePage } from '../page-builders/buildAwaitCodePage'
@@ -12,19 +18,24 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
   app.post(SUBMIT_EMAIL_PATH, async (c: LocalContext) => {
     // const contentType = c.req.header('content-type')
     const body: SubmitEmailBody = await c.req.parseBody()
+    const email = body.email ?? ''
 
-    if (body.email !== undefined && body.email.trim().length > 0) {
-      const personId = await findPersonByEmail(c, body.email, true)
+    if (email.trim().length > 0) {
+      setCookie(c, EMAIL_SUBMITTED_COOKIE, email, {
+        path: '/',
+        sameSite: 'Strict',
+      })
+      const personId = await findPersonByEmail(c, email, true)
       if (personId === UNKNOWN_PERSON_ID) {
-        return buildSignInPage({
-          error: `Unknown email address: ${body.email}`,
+        return buildSignInPage(email, {
+          error: `Unknown email address: ${email}`,
         })(c)
       }
 
-      return buildAwaitCodePage(body.email)(c)
+      return buildAwaitCodePage(email)(c)
     }
 
-    return buildSignInPage({
+    return buildSignInPage('', {
       error: `You must supply an email address`,
     })(c)
   })
