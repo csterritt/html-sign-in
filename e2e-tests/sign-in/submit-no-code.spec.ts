@@ -16,7 +16,6 @@ test('submit an empty magic code', async ({ page }) => {
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'await-code-page-banner')
-
   await clickLink(page, 'submit')
 
   // Expect there to be an error message

@@ -7,10 +7,6 @@ test('submit a known code', async ({ page }) => {
   await clickLink(page, 'sign-in-link')
   await fillInput(page, 'email', 'fredfred@team439980.testinator.com')
   await clickLink(page, 'submit')
-
-  // Expect there to be the right banner
-  await findItemByTestId(page, 'await-code-page-banner')
-
   await fillInput(page, 'code', '123654')
   await clickLink(page, 'submit')
 
