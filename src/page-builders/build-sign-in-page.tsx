@@ -1,7 +1,7 @@
 import { Fragment } from 'hono/jsx'
 import { addErrorIfAny } from './add-error-if-any'
 
-import { ROOT_PATH, SUBMIT_EMAIL_PATH } from '../constants'
+import { CANCEL_SIGN_IN_PATH, SUBMIT_EMAIL_PATH } from '../constants'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
 
@@ -38,7 +38,7 @@ const renderSignInPage = (
 
               <div class='card-actions justify-between mt-4'>
                 <a
-                  href={ROOT_PATH}
+                  href={CANCEL_SIGN_IN_PATH}
                   class='btn btn-ghost'
                   data-testid='cancel-sign-in-link'
                 >

@@ -1,8 +1,7 @@
 import { Fragment } from 'hono/jsx'
 
+import { CANCEL_SIGN_IN_PATH, SUBMIT_CODE_PATH } from '../constants'
 import { addErrorIfAny } from './add-error-if-any'
-
-import { SUBMIT_CODE_PATH } from '../constants'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
 
@@ -41,7 +40,11 @@ const renderAwaitCodePage = (
               />
 
               <div class='card-actions justify-between mt-4'>
-                <a class='btn btn-ghost' data-testid='cancel-sign-in-link'>
+                <a
+                  href={CANCEL_SIGN_IN_PATH}
+                  class='btn btn-ghost'
+                  data-testid='cancel-sign-in-link'
+                >
                   Cancel sign in
                 </a>
 
