@@ -1,4 +1,5 @@
 import { deleteCookie, setCookie } from 'hono/cookie'
+import { StatusCodes } from 'http-status-codes'
 
 import {
   AWAIT_CODE_PATH,
@@ -10,7 +11,6 @@ import {
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
-import { forwardTo } from '../forward-to'
 
 type SubmitEmailBody = {
   email?: string
@@ -32,17 +32,17 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
           path: '/',
           sameSite: 'Strict',
         })
-        return forwardTo(c, SIGN_IN_PATH)
+        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
       deleteCookie(c, ERROR_MESSAGE_COOKIE)
-      return forwardTo(c, AWAIT_CODE_PATH)
+      return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
     }
 
     setCookie(c, ERROR_MESSAGE_COOKIE, 'You must supply an email address', {
       path: '/',
       sameSite: 'Strict',
     })
-    return forwardTo(c, SIGN_IN_PATH)
+    return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
   })
 }
