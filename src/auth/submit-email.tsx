@@ -9,7 +9,6 @@ import {
   UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
-import { buildSignInPage } from '../page-builders/build-sign-in-page'
 import { findPersonByEmail } from '../db/session-db-access'
 import { forwardTo } from '../forward-to'
 
@@ -40,8 +39,10 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
       return forwardTo(c, AWAIT_CODE_PATH)
     }
 
-    return buildSignInPage('', {
-      error: 'You must supply an email address',
-    })(c)
+    setCookie(c, ERROR_MESSAGE_COOKIE, 'You must supply an email address', {
+      path: '/',
+      sameSite: 'Strict',
+    })
+    return forwardTo(c, SIGN_IN_PATH)
   })
 }
