@@ -1,14 +1,17 @@
-import { setCookie } from 'hono/cookie'
+import { deleteCookie, setCookie } from 'hono/cookie'
 
 import {
+  AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
+  ERROR_MESSAGE_COOKIE,
+  SIGN_IN_PATH,
   SUBMIT_EMAIL_PATH,
   UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import { buildSignInPage } from '../page-builders/build-sign-in-page'
-import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
 import { findPersonByEmail } from '../db/session-db-access'
+import { forwardTo } from '../forward-to'
 
 type SubmitEmailBody = {
   email?: string
@@ -16,7 +19,6 @@ type SubmitEmailBody = {
 
 export const setupSubmitEmailPath = (app: HonoApp) => {
   app.post(SUBMIT_EMAIL_PATH, async (c: LocalContext) => {
-    // const contentType = c.req.header('content-type')
     const body: SubmitEmailBody = await c.req.parseBody()
     const email = body.email ?? ''
 
@@ -27,12 +29,15 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
       })
       const personId = await findPersonByEmail(c, email, true)
       if (personId === UNKNOWN_PERSON_ID) {
-        return buildSignInPage(email, {
-          error: `Unknown email address: ${email}`,
-        })(c)
+        setCookie(c, ERROR_MESSAGE_COOKIE, `Unknown email address: ${email}`, {
+          path: '/',
+          sameSite: 'Strict',
+        })
+        return forwardTo(c, SIGN_IN_PATH)
       }
 
-      return buildAwaitCodePage(email)(c)
+      deleteCookie(c, ERROR_MESSAGE_COOKIE)
+      return forwardTo(c, AWAIT_CODE_PATH)
     }
 
     return buildSignInPage('', {

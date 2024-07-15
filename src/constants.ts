@@ -7,3 +7,4 @@ export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
 export const UNKNOWN_PERSON_ID = -1
 
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
+export const ERROR_MESSAGE_COOKIE = 'error-message'
