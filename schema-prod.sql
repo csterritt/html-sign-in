@@ -25,3 +25,6 @@ DROP TABLE IF EXISTS HSISignUpCodes;
 CREATE TABLE HSISignUpCodes (
         Code TEXT PRIMARY KEY,
         Email Text NOT NULL);
+
+INSERT INTO HSIPeople (Id, Email, IsVerified, AddedTimestamp) values
+    (1, 'csterritt@gmail.com', 1, '2023-11-25T16:28:15.310Z');
