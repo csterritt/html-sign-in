@@ -1,11 +1,6 @@
 import { test } from '@playwright/test'
 
-import {
-  clickLink,
-  fillInput,
-  findItemByTestId,
-  verifyAlert,
-} from '../support/finders'
+import { clickLink, findItemByTestId, verifyAlert } from '../support/finders'
 
 test('submit no email', async ({ page }) => {
   await page.goto('http://localhost:3000/')

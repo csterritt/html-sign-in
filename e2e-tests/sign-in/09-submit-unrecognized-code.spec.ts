@@ -16,6 +16,9 @@ test('submit an unknown magic code', async ({ page }) => {
   await fillInput(page, 'code', '565656')
   await clickLink(page, 'submit')
 
+  // Expect there to be the right banner
+  await findItemByTestId(page, 'await-code-page-banner')
+
   // Expect there to be an error message
   await verifyAlert(
     page,
