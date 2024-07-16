@@ -24,7 +24,7 @@ export const getSessionId = async (
         signInCode = '123654' // PRODUCTION:REMOVE
       } // PRODUCTION:REMOVE
       // PRODUCTION:REMOVE-NEXT-LINE
-      if ((signUpCode as string).length > 0) {
+      if ((signUpCode ?? '').length > 0) {
         signInCode = '654321' // PRODUCTION:REMOVE
       } // PRODUCTION:REMOVE
 
