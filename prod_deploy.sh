@@ -5,6 +5,8 @@ set -Eeuo
 echo clean
 git reset --hard HEAD
 msg=$(./update-version.rb)
+curl -s 'http://localhost:3000' > src/index.html || exit 1
+git add src/index.html
 git commit -a -m "$msg"
 
 git checkout main
