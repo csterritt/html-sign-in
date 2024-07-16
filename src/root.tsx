@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Fragment } from 'hono/jsx'
 
-import { Bindings } from '../src/bindings'
-import { ROOT_PATH, SIGN_IN_PATH } from '../src/constants'
-import { HeaderElement, footer, header } from '../src/partials/header'
+import { Bindings } from './bindings'
+import { ROOT_PATH, SIGN_IN_PATH } from './constants'
+import { HeaderElement, footer, header } from './partials/header'
 
 const signInPart: HeaderElement = (
   <div class='px-2 mx-2'>

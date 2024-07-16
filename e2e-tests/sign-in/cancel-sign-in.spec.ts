@@ -2,7 +2,7 @@ import { test } from '@playwright/test'
 
 import { clickLink, findItemByTestId } from '../support/finders'
 
-test('click sign in, page has banner', async ({ page }) => {
+test('start sign in, cancel before giving email', async ({ page }) => {
   await page.goto('http://localhost:3000/')
 
   // Expect there to be the right banner
