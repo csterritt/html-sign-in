@@ -1,13 +1,27 @@
 import { Fragment } from 'hono/jsx'
 import { addErrorIfAny } from './add-error-if-any'
 
-import { footer, header } from '../partials/header'
+import { footer, header, HeaderElement } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
+import { CANCEL_SIGN_IN_PATH } from '../constants'
+
+const signOutPart: HeaderElement = (
+  <div class='px-2 mx-2'>
+    <form action={CANCEL_SIGN_IN_PATH} method='POST'>
+      <input
+        type='submit'
+        class='btn btn-secondary'
+        data-testid='sign-out-link'
+        value='Sign Out'
+      />
+    </form>
+  </div>
+)
 
 const renderSignInSuccessPage = (c: LocalContext, options?: ForwardOptions) =>
   c.render(
     <Fragment>
-      {header('sign-in-success-page-banner')}
+      {header('sign-in-success-page-banner', signOutPart)}
 
       <div class='flex-grow mx-6'>
         {addErrorIfAny(options)}
