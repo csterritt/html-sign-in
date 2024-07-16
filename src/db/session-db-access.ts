@@ -37,6 +37,7 @@ export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformationList>> => {
+  // TODO: Don't return an array of SessionInformation, just the first if it's there
   return runDatabaseAction(
     context,
     'select * from HSISession where Session = ?',

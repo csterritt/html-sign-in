@@ -1,27 +1,87 @@
-import { deleteCookie, getCookie } from 'hono/cookie'
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { StatusCodes } from 'http-status-codes'
 
 import {
+  AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
+  ERROR_MESSAGE_COOKIE,
+  PROTECTED_PATH,
   SESSION_COOKIE,
   SIGN_IN_PATH,
   STANDARD_COOKIE_OPTIONS,
   SUBMIT_CODE_PATH,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
-import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
 import {
-  findPersonByEmail,
   getSessionInfoForSessionId,
+  updateSessionContent,
 } from '../db/session-db-access'
-import { buildSignInSuccessPage } from '../page-builders/build-sign-in-success-page'
 
 type SubmitCodeBody = {
   code?: string
 }
 
-const codeIsValid = (personId: number, code: string) => {
-  return personId === 1 && code === '123654' // PRODUCTION:REMOVE
+enum ValidationResult {
+  Success,
+  InvalidCode,
+  InvalidSession,
+}
+
+const codeIsValid = async (
+  c: LocalContext,
+  emailSubmitted: string,
+  code: string
+): Promise<ValidationResult> => {
+  const sessionId = getCookie(c, SESSION_COOKIE) ?? ''
+  if (sessionId.trim().length === 0) {
+    // TODO: handle session not found
+    return ValidationResult.InvalidSession
+  }
+
+  const sessionInfo = await getSessionInfoForSessionId(c, sessionId)
+  if (
+    sessionInfo?.success === false ||
+    sessionInfo?.results === undefined ||
+    sessionInfo?.results?.length === 0 ||
+    sessionInfo?.results[0]?.Content === undefined ||
+    sessionInfo.results[0].Content.length === 0
+  ) {
+    // TODO: handle session not found
+    return ValidationResult.InvalidSession
+  }
+
+  const content = JSON.parse(sessionInfo.results[0].Content)
+  if (content.email !== emailSubmitted) {
+    return ValidationResult.InvalidSession
+  }
+
+  if (content.signInCode !== code) {
+    const count = (content.count ?? 0) + 1
+
+    if (count < 3) {
+      const newContent = {
+        ...content,
+        count,
+      }
+      const updateResults = await updateSessionContent(
+        c,
+        null,
+        newContent,
+        sessionId
+      )
+      if (updateResults?.success === false) {
+        // TODO: handle session not found
+        return ValidationResult.InvalidSession
+      }
+    } else {
+      deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+      return ValidationResult.InvalidSession
+    }
+
+    return ValidationResult.InvalidCode
+  }
+
+  return ValidationResult.Success
 }
 
 export const setupSubmitCodePath = (app: HonoApp) => {
@@ -32,7 +92,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
     }
 
     const sessionInfo = await getSessionInfoForSessionId(c, sessionId)
-    if (sessionInfo?.success === false) {
+    if (sessionInfo?.success !== true) {
       // TODO: handle session not found
       return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
     }
@@ -41,21 +101,44 @@ export const setupSubmitCodePath = (app: HonoApp) => {
     const codeSubmitted = body.code ?? ''
     const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
 
+    if (emailSubmitted.trim().length === 0) {
+      // TODO: handle email not found
+      return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+    }
+
     if (codeSubmitted.trim().length > 0) {
-      const personId = await findPersonByEmail(c, emailSubmitted, true)
-      if (!codeIsValid(personId, codeSubmitted)) {
-        return buildAwaitCodePage(emailSubmitted, {
-          error: 'That is the wrong code, or it has expired. Please try again.',
-        })(c)
+      const isValid = await codeIsValid(c, emailSubmitted, codeSubmitted)
+      if (isValid === ValidationResult.InvalidCode) {
+        setCookie(
+          c,
+          ERROR_MESSAGE_COOKIE,
+          'That is the wrong code. Please try again.'
+        )
+        return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
+      }
+
+      if (isValid === ValidationResult.InvalidSession) {
+        setCookie(
+          c,
+          ERROR_MESSAGE_COOKIE,
+          'That code has expired, please sign in again'
+        )
+        deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+        deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+
+        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
       deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-      return buildSignInSuccessPage()(c)
+      deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
+      return c.redirect(PROTECTED_PATH, StatusCodes.SEE_OTHER)
     }
 
-    return buildAwaitCodePage(emailSubmitted, {
-      error:
-        "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
-    })(c)
+    setCookie(
+      c,
+      ERROR_MESSAGE_COOKIE,
+      "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again."
+    )
+    return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
   })
 }

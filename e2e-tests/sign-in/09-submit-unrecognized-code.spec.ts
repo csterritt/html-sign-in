@@ -20,10 +20,7 @@ test('submit an unknown magic code', async ({ page }) => {
   await findItemByTestId(page, 'await-code-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(
-    page,
-    'That is the wrong code, or it has expired. Please try again.'
-  )
+  await verifyAlert(page, 'That is the wrong code. Please try again.')
 
   // Expect there to be the proper message
   await verifyContentByTestId(
