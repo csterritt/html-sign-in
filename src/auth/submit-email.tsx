@@ -54,7 +54,7 @@ export const setupSubmitEmailPath = (app: HonoApp) => {
         sessionResults.sessionId,
         STANDARD_COOKIE_OPTIONS
       )
-      deleteCookie(c, ERROR_MESSAGE_COOKIE)
+      deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
       return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
     }
 

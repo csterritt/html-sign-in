@@ -1,6 +1,10 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
 
-import { EMAIL_SUBMITTED_COOKIE, SUBMIT_CODE_PATH } from '../constants'
+import {
+  EMAIL_SUBMITTED_COOKIE,
+  STANDARD_COOKIE_OPTIONS,
+  SUBMIT_CODE_PATH,
+} from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
 import { findPersonByEmail } from '../db/session-db-access'
@@ -28,7 +32,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
         })(c)
       }
 
-      deleteCookie(c, EMAIL_SUBMITTED_COOKIE)
+      deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
       return buildSignInSuccessPage()(c)
     }
 
