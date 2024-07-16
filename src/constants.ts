@@ -24,7 +24,7 @@ export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
   sameSite: 'Strict',
   httpOnly: true, // PRODUCTION:UNCOMMENT
    secure: true, 
-   domain: 'your.domain.here', 
+   domain: 'html-sign-in.pages.dev', 
 }
 
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
