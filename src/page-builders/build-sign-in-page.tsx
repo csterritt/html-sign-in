@@ -32,6 +32,7 @@ const renderSignInPage = (
                 type='email'
                 placeholder='email'
                 class='input input-bordered input-primary w-full max-w-xs'
+                autofocus={true}
                 value={emailSubmitted}
                 data-testid='email-input'
               />

@@ -2,7 +2,7 @@ import { test } from '@playwright/test'
 
 import { clickLink, fillInput, findItemByTestId } from '../support/finders'
 
-test('submit a known code', async ({ page }) => {
+test('sign out after sign in', async ({ page }) => {
   await page.goto('http://localhost:3000/')
   await clickLink(page, 'sign-in-link')
   await fillInput(page, 'email', 'fredfred@team439980.testinator.com')
@@ -13,7 +13,7 @@ test('submit a known code', async ({ page }) => {
   // Expect there to be the right banner
   await findItemByTestId(page, 'protected-page-banner')
 
-  // There is now a sign-out button
-  await findItemByTestId(page, 'sign-out-link')
   await clickLink(page, 'sign-out-link')
+  await findItemByTestId(page, 'startup-page-banner')
+  await findItemByTestId(page, 'footer-banner')
 })

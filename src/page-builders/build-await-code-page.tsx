@@ -36,6 +36,7 @@ const renderAwaitCodePage = (
                 type='code'
                 placeholder='code'
                 class='input input-bordered input-primary w-full max-w-xs'
+                autofocus={true}
                 data-testid='code-input'
               />
 
