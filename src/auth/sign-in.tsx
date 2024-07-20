@@ -22,8 +22,7 @@ export const setupSignInPath = (app: HonoApp) => {
       const sessionInfo = await getSessionInfoForSessionId(c, sessionId)
       if (
         sessionInfo?.success === true &&
-        sessionInfo.results?.length > 0 &&
-        sessionInfo.results[0].SignedIn === 1
+        sessionInfo.results?.SignedIn === 1
       ) {
         return c.redirect(PROTECTED_PATH, StatusCodes.SEE_OTHER)
       }

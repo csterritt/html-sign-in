@@ -43,15 +43,13 @@ const codeIsValid = async (
   if (
     sessionInfo?.success === false ||
     sessionInfo?.results === undefined ||
-    sessionInfo?.results?.length === 0 ||
-    sessionInfo?.results[0]?.Content === undefined ||
-    sessionInfo.results[0].Content.length === 0
+    sessionInfo?.results?.Content === undefined
   ) {
     // TODO: handle session not found
     return ValidationResult.InvalidSession
   }
 
-  const content = JSON.parse(sessionInfo.results[0].Content)
+  const content = JSON.parse(sessionInfo.results.Content)
   if (content.email !== emailSubmitted) {
     return ValidationResult.InvalidSession
   }

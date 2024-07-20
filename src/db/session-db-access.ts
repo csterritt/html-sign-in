@@ -12,8 +12,6 @@ export type SessionInformation = {
   Content?: string
 }
 
-export type SessionInformationList = SessionInformation[]
-
 export type SessionQueryResults<ResultsType> = {
   success: boolean
   meta: {
@@ -36,13 +34,18 @@ export type SessionDeleteList = SessionOnly[]
 export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
-): Promise<SessionQueryResults<SessionInformationList>> => {
-  // TODO: Don't return an array of SessionInformation, just the first if it's there
-  return runDatabaseAction(
+): Promise<SessionQueryResults<SessionInformation>> => {
+  const results = await runDatabaseAction(
     context,
     'select * from HSISession where Session = ?',
     sessionId
   )
+
+  return {
+    success: results?.success ?? false,
+    meta: results?.meta ?? {},
+    results: results?.results?.length > 0 ? results.results[0] : undefined,
+  }
 }
 
 export const updateSessionContent = async (
