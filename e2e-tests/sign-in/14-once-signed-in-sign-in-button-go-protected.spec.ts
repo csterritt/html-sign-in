@@ -20,4 +20,5 @@ test('once signed in, the Sign In button takes you to the protected page', async
 
   // There is now a sign-out button
   await findItemByTestId(page, 'sign-out-link')
+  await clickLink(page, 'sign-out-link')
 })

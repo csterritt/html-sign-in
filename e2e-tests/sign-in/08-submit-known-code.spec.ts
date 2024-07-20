@@ -15,4 +15,5 @@ test('submit a known code', async ({ page }) => {
 
   // There is now a sign-out button
   await findItemByTestId(page, 'sign-out-link')
+  await clickLink(page, 'sign-out-link')
 })
