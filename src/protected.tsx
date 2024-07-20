@@ -1,4 +1,5 @@
-import { getCookie } from 'hono/cookie'
+import { getCookie, setCookie } from 'hono/cookie'
+import { StatusCodes } from 'http-status-codes'
 
 import { HonoApp, LocalContext } from './bindings'
 import {
@@ -7,10 +8,8 @@ import {
   SESSION_COOKIE,
   SIGN_IN_PATH,
 } from './constants'
-import { buildSignInSuccessPage } from './page-builders/build-sign-in-success-page'
-import { StatusCodes } from 'http-status-codes'
+import { buildProtectedPage } from './page-builders/build-protected-page'
 import { getSessionInfoForSessionId } from './db/session-db-access'
-import { setCookie } from 'hono/cookie'
 
 export const setupProtectedPath = (app: HonoApp) => {
   app.get(PROTECTED_PATH, async (c: LocalContext) => {
@@ -30,6 +29,6 @@ export const setupProtectedPath = (app: HonoApp) => {
       return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
     }
 
-    return buildSignInSuccessPage({ error: errorMessage })(c)
+    return buildProtectedPage({ error: errorMessage })(c)
   })
 }

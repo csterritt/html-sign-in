@@ -14,6 +14,7 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import {
   getSessionInfoForSessionId,
+  rememberUserSignedIn,
   updateSessionContent,
 } from '../db/session-db-access'
 
@@ -129,6 +130,10 @@ export const setupSubmitCodePath = (app: HonoApp) => {
         return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
+      const content = {
+        email: emailSubmitted,
+      }
+      await rememberUserSignedIn(c, content, sessionId)
       deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
       deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
       return c.redirect(PROTECTED_PATH, StatusCodes.SEE_OTHER)

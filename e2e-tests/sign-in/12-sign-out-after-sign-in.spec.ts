@@ -11,7 +11,7 @@ test('sign out after sign in', async ({ page }) => {
   await clickLink(page, 'submit')
 
   // Expect there to be the right banner
-  await findItemByTestId(page, 'sign-in-success-page-banner')
+  await findItemByTestId(page, 'protected-page-banner')
 
   await clickLink(page, 'sign-out-link')
   await findItemByTestId(page, 'startup-page-banner')

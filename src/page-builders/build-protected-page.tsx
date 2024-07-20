@@ -18,17 +18,17 @@ const signOutPart: HeaderElement = (
   </div>
 )
 
-const renderSignInSuccessPage = (c: LocalContext, options?: ForwardOptions) =>
+const renderProtectedPage = (c: LocalContext, options?: ForwardOptions) =>
   c.render(
     <Fragment>
-      {header('sign-in-success-page-banner', signOutPart)}
+      {header('protected-page-banner', signOutPart)}
 
       <div class='flex-grow mx-6'>
         {addErrorIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>
-            <h3 class='card-title'>You have signed in successfully!</h3>
+            <h3 class='card-title'>The protected page.</h3>
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@ const renderSignInSuccessPage = (c: LocalContext, options?: ForwardOptions) =>
     </Fragment>
   )
 
-export const buildSignInSuccessPage =
+export const buildProtectedPage =
   (options?: ForwardOptions) => (c: LocalContext) => {
-    return renderSignInSuccessPage(c, options)
+    return renderProtectedPage(c, options)
   }
