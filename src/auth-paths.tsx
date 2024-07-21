@@ -6,7 +6,8 @@ import { setupCancelSignInPath } from './auth/cancel-sign-in'
 import { setupSignInPath } from './auth/sign-in'
 import { setupSignUpPath } from './auth/sign-up'
 import { setupSubmitCodePath } from './auth/submit-code'
-import { setupSubmitEmailPath } from './auth/submit-email'
+import { setupSubmitSignInEmailPath } from './auth/submit-sign-in-email'
+import { setupSubmitSignUpEmailPath } from './auth/submit-sign-up-email'
 
 export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
   setupAwaitCodePath(app)
@@ -14,5 +15,6 @@ export const setupSignInPaths = (app: Hono<{ Bindings: Bindings }>) => {
   setupSignInPath(app)
   setupSignUpPath(app)
   setupSubmitCodePath(app)
-  setupSubmitEmailPath(app)
+  setupSubmitSignInEmailPath(app)
+  setupSubmitSignUpEmailPath(app)
 }

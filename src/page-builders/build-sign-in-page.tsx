@@ -4,7 +4,7 @@ import { addErrorIfAny } from './add-error-if-any'
 import {
   CANCEL_SIGN_IN_PATH,
   SIGN_UP_PATH,
-  SUBMIT_EMAIL_PATH,
+  SUBMIT_SIGN_IN_EMAIL_PATH,
 } from '../constants'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
@@ -25,7 +25,7 @@ const renderSignInPage = (
           <div class='card-body'>
             <h3 class='card-title'>Sign In</h3>
 
-            <form action={SUBMIT_EMAIL_PATH} method='POST'>
+            <form action={SUBMIT_SIGN_IN_EMAIL_PATH} method='POST'>
               <label class='label'>
                 <span class='label-text'>Email address:</span>
               </label>

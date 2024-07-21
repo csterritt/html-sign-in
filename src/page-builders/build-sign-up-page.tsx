@@ -4,7 +4,7 @@ import { addErrorIfAny } from './add-error-if-any'
 import {
   CANCEL_SIGN_IN_PATH,
   SIGN_IN_PATH,
-  SUBMIT_EMAIL_PATH,
+  SUBMIT_SIGN_UP_EMAIL_PATH,
 } from '../constants'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
@@ -25,7 +25,7 @@ const renderSignUpPage = (
           <div class='card-body'>
             <h3 class='card-title'>Register a new account</h3>
 
-            <form action={SUBMIT_EMAIL_PATH} method='POST'>
+            <form action={SUBMIT_SIGN_UP_EMAIL_PATH} method='POST'>
               <label class='label'>
                 <span class='label-text'>Email address:</span>
               </label>
@@ -47,7 +47,7 @@ const renderSignUpPage = (
 
               <input
                 id='signup-code'
-                name='signup-code'
+                name='signupCode'
                 type='signup-code'
                 placeholder='Registration Code'
                 class='input input-bordered input-primary w-full max-w-xs'
@@ -58,7 +58,7 @@ const renderSignUpPage = (
                 <a
                   href={CANCEL_SIGN_IN_PATH}
                   class='btn btn-ghost'
-                  data-testid='cancel-sign-in-link'
+                  data-testid='cancel-sign-up-link'
                 >
                   Cancel registration
                 </a>
