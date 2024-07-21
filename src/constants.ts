@@ -13,6 +13,7 @@ export type CookieOptions = {
 export const ROOT_PATH = '/'
 export const PROTECTED_PATH = '/protected'
 export const SIGN_IN_PATH = '/api/auth/sign-in'
+export const SIGN_UP_PATH = '/api/auth/sign-up'
 export const SUBMIT_EMAIL_PATH = '/api/auth/submit-email'
 export const AWAIT_CODE_PATH = '/api/auth/await-code'
 export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
