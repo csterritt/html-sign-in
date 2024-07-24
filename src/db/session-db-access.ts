@@ -1,28 +1,24 @@
+import { drizzle } from 'drizzle-orm/d1'
+
 import { getSessionId } from './get-session-id'
 import { runDatabaseAction } from './run-db-action'
 import { UNKNOWN_PERSON_ID } from '../constants'
 import { LocalContext } from '../bindings'
+import { eq } from 'drizzle-orm'
+import * as schema from './session-schema'
 
 export type SessionInformation = {
   Id: number
   PersonId: number
   Session: string
   Timestamp: string
-  SignedIn: number
+  SignedIn: boolean
   Content?: string
 }
 
 export type SessionQueryResults<ResultsType> = {
   success: boolean
-  meta: {
-    served_by: string
-    duration: number
-    changes: number
-    last_row_id: number
-    changed_db: boolean
-    size_after: number
-  }
-  results: ResultsType
+  results: ResultsType | undefined
 }
 
 export type SessionOnly = {
@@ -35,16 +31,19 @@ export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformation>> => {
-  const results = await runDatabaseAction(
-    context,
-    'select * from HSISession where Session = ?',
-    sessionId
-  )
+  // const results = await runDatabaseAction(
+  //   context,
+  //   'select * from HSISession where Session = ?',
+  //   sessionId
+  // )
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  const results = await db.query.HSISession.findFirst({
+    where: eq(schema.HSISession.Session, sessionId),
+  })
 
   return {
-    success: results?.success ?? false,
-    meta: results?.meta ?? {},
-    results: results?.results?.length > 0 ? results.results[0] : undefined,
+    success: results != null,
+    results,
   }
 }
 
