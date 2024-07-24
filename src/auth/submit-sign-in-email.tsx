@@ -14,6 +14,7 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
 import { getSessionId } from '../db/get-session-id'
+// import { sendCodeEMail } from '../db/send-email' // PRODUCTION:UNCOMMENT
 
 type SubmitEmailBody = {
   email?: string
@@ -55,6 +56,10 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
         STANDARD_COOKIE_OPTIONS
       )
       deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
+
+      console.log(`signUpCode is ${JSON.stringify(sessionResults.signInCode)}`) // PRODUCTION:REMOVE
+      // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
+
       return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
     }
 

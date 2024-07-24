@@ -28,4 +28,6 @@ CREATE TABLE HSISignUpCodes (
 
 INSERT INTO HSIPeople (Id, Email, IsVerified, AddedTimestamp) values
     (1, 'fredfred@team439980.testinator.com', 1, '2023-11-25T16:28:15.310Z');
+INSERT INTO HSIPeople (Id, Email, IsVerified, AddedTimestamp) values
+    (2, 'csterritt@gmail.com', 1, '2023-11-25T16:28:15.310Z');
 INSERT INTO HSISignUpCodes (Code, Email) values ('asdfasdf', 'not an email');
