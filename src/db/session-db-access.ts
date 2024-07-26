@@ -31,11 +31,6 @@ export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformation>> => {
-  // const results = await runDatabaseAction(
-  //   context,
-  //   'select * from HSISession where Session = ?',
-  //   sessionId
-  // )
   const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
   const results = await db.query.HSISession.findFirst({
     where: eq(schema.HSISession.Session, sessionId),
@@ -53,22 +48,23 @@ export const updateSessionContent = async (
   content: object,
   sessionId: string
 ) => {
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
   if (date == null) {
-    return runDatabaseAction(
-      context,
-      'update HSISession set Content = ? where Session = ?',
-      JSON.stringify(content),
-      sessionId
-    )
+    return db
+      .update(schema.HSISession)
+      .set({
+        Content: JSON.stringify(content),
+      })
+      .where(eq(schema.HSISession.Session, sessionId))
+  } else {
+    return db
+      .update(schema.HSISession)
+      .set({
+        Timestamp: date.toISOString(),
+        Content: JSON.stringify(content),
+      })
+      .where(eq(schema.HSISession.Session, sessionId))
   }
-
-  return runDatabaseAction(
-    context,
-    'update HSISession set Timestamp = ?, Content = ? where Session = ?',
-    date.toISOString(),
-    JSON.stringify(content),
-    sessionId
-  )
 }
 
 export const findPersonByEmail = async (

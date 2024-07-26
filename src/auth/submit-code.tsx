@@ -55,7 +55,7 @@ const codeIsValid = async (
         newContent,
         sessionId
       )
-      if (updateResults?.success === false) {
+      if (!updateResults?.success) {
         // TODO: handle session not found
         return ValidationResult.InvalidSession
       }
