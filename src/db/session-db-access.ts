@@ -49,22 +49,17 @@ export const updateSessionContent = async (
   sessionId: string
 ) => {
   const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  if (date == null) {
-    return db
-      .update(schema.HSISession)
-      .set({
-        Content: JSON.stringify(content),
-      })
-      .where(eq(schema.HSISession.Session, sessionId))
-  } else {
-    return db
-      .update(schema.HSISession)
-      .set({
-        Timestamp: date.toISOString(),
-        Content: JSON.stringify(content),
-      })
-      .where(eq(schema.HSISession.Session, sessionId))
+  const setContent: { Content: string; Timestamp?: string } = {
+    Content: JSON.stringify(content),
   }
+  if (date != null) {
+    setContent.Timestamp = date.toISOString()
+  }
+
+  return db
+    .update(schema.HSISession)
+    .set(setContent)
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const findPersonByEmail = async (
