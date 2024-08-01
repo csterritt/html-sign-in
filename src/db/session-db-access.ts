@@ -130,12 +130,14 @@ export const rememberUserSignedIn = async (
   sessionContent: object,
   sessionId: string
 ) => {
-  return runDatabaseAction(
-    context,
-    'update HSISession set Content = ?, SignedIn = TRUE where Session = ?',
-    JSON.stringify(sessionContent),
-    sessionId
-  )
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  return db
+    .update(schema.HSISession)
+    .set({
+      Content: JSON.stringify(sessionContent),
+      SignedIn: true,
+    })
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const rememberUserCreated = async (
