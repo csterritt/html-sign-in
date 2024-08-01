@@ -107,11 +107,10 @@ export const removeSessionFromDb = async (
   context: LocalContext,
   sessionId: string
 ) => {
-  return runDatabaseAction(
-    context,
-    'delete from HSISession where Session = ?',
-    sessionId
-  )
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  return db
+    .delete(schema.HSISession)
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const removeOldUserSessionsFromDb = async (
