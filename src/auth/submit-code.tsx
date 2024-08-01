@@ -105,18 +105,10 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           tooOld.toDate()
         )
 
-        if (
-          removeResults?.success &&
-          removeResults?.results != null &&
-          removeResults?.results?.length > 0
-        ) {
+        if (removeResults != null && removeResults?.length > 0) {
           let found = false
-          for (
-            let index = 0;
-            index < removeResults.results.length;
-            index += 1
-          ) {
-            if (sessionInfo.Session === removeResults.results[index].Session) {
+          for (let index = 0; index < removeResults.length; index += 1) {
+            if (sessionInfo.Session === removeResults[index].Session) {
               found = true
               break
             }

@@ -4,7 +4,7 @@ import { getSessionId } from './get-session-id'
 import { runDatabaseAction } from './run-db-action'
 import { UNKNOWN_PERSON_ID } from '../constants'
 import { LocalContext } from '../bindings'
-import { and, eq, SQL } from 'drizzle-orm'
+import { and, eq, lt, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
 
 export type SessionInformation = {
@@ -117,12 +117,19 @@ export const removeOldUserSessionsFromDb = async (
   context: LocalContext,
   userInfo: SessionInformation,
   tooOld: Date
-): Promise<SessionQueryResults<SessionDeleteList>> => {
-  const sqlStatement = `delete from HSISession where Session = ? and SignedIn = 0 and Timestamp < ? returning Session` // PRODUCTION:REMOVE
-  // const sqlStatement = `delete from HSISession where PersonId = ? and SignedIn = 0 and Timestamp < ? returning Session` // PRODUCTION:UNCOMMENT
-  const args = [userInfo.Session, tooOld.toISOString()] // PRODUCTION:REMOVE
-  // const args = [userInfo.PersonId, tooOld.toISOString()] // PRODUCTION:UNCOMMENT
-  return runDatabaseAction(context, sqlStatement, ...args)
+): Promise<SessionDeleteList> => {
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  return db
+    .delete(schema.HSISession)
+    .where(
+      and(
+        eq(schema.HSISession.Session, userInfo.Session), // PRODUCTION:REMOVE
+        //   eq(schema.HSISession.PersonId, userInfo.PersonId), // PRODUCTION:UNCOMMENT
+        eq(schema.HSISession.SignedIn, false),
+        lt(schema.HSISession.Timestamp, tooOld.toISOString())
+      )
+    )
+    .returning()
 }
 
 export const rememberUserSignedIn = async (
