@@ -1,5 +1,6 @@
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { StatusCodes } from 'http-status-codes'
+import dayjs from 'dayjs/esm'
 
 import {
   AWAIT_CODE_PATH,
@@ -8,12 +9,14 @@ import {
   PROTECTED_PATH,
   SESSION_COOKIE,
   SIGN_IN_PATH,
+  SIGN_IN_TIMEOUT,
   STANDARD_COOKIE_OPTIONS,
   SUBMIT_CODE_PATH,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import {
   rememberUserSignedIn,
+  removeOldUserSessionsFromDb,
   SessionInformation,
   updateSessionContent,
 } from '../db/session-db-access'
@@ -75,7 +78,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
     return await withSession(
       c,
       async (sessionIsValid, sessionId, sessionInfo) => {
-        if (!sessionIsValid) {
+        if (!sessionIsValid || sessionInfo == null) {
           return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
         }
 
@@ -86,6 +89,47 @@ export const setupSubmitCodePath = (app: HonoApp) => {
         if (emailSubmitted.trim().length === 0) {
           // TODO: handle email not found
           return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+        }
+
+        let delay = SIGN_IN_TIMEOUT
+        // PRODUCTION:REMOVE-NEXT-LINE
+        if (codeSubmitted === '111111') {
+          delay = 1 // PRODUCTION:REMOVE
+        } // PRODUCTION:REMOVE
+
+        const now = dayjs()
+        let tooOld = now.subtract(delay)
+        const removeResults = await removeOldUserSessionsFromDb(
+          c,
+          sessionInfo,
+          tooOld.toDate()
+        )
+
+        if (
+          removeResults?.success &&
+          removeResults?.results != null &&
+          removeResults?.results?.length > 0
+        ) {
+          let found = false
+          for (
+            let index = 0;
+            index < removeResults.results.length;
+            index += 1
+          ) {
+            if (sessionInfo.Session === removeResults.results[index].Session) {
+              found = true
+              break
+            }
+          }
+
+          if (found) {
+            setCookie(
+              c,
+              ERROR_MESSAGE_COOKIE,
+              'That code has expired, please sign in again'
+            )
+            return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+          }
         }
 
         if (codeSubmitted.trim().length > 0) {
