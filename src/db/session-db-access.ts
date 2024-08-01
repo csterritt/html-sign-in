@@ -93,14 +93,14 @@ export const createNewSession = async (
   date: Date,
   sessionContent: object
 ) => {
-  return runDatabaseAction(
-    context,
-    'insert into HSISession (PersonId, Session, SignedIn, Timestamp, Content) values (?, ?, FALSE, ?, ?)',
-    personId,
-    sessionId,
-    date.toISOString(),
-    JSON.stringify(sessionContent)
-  )
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  return db.insert(schema.HSISession).values({
+    PersonId: personId,
+    Session: sessionId,
+    SignedIn: false,
+    Timestamp: date.toISOString(),
+    Content: JSON.stringify(sessionContent),
+  })
 }
 
 export const removeSessionFromDb = async (
