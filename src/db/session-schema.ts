@@ -11,3 +11,12 @@ export const HSISession = sqliteTable('HSISession', {
   SignedIn: integer('SignedIn', { mode: 'boolean' }).notNull().default(false),
   Content: text('Content').notNull(),
 })
+
+export const HSIPeople = sqliteTable('HSIPeople', {
+  Id: integer('Id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  Email: text('Email').notNull(),
+  IsVerified: integer('IsVerified', { mode: 'boolean' })
+    .notNull()
+    .default(false),
+  AddedTimestamp: text('Timestamp').notNull(),
+})

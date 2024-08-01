@@ -4,7 +4,7 @@ import { getSessionId } from './get-session-id'
 import { runDatabaseAction } from './run-db-action'
 import { UNKNOWN_PERSON_ID } from '../constants'
 import { LocalContext } from '../bindings'
-import { eq } from 'drizzle-orm'
+import { and, eq, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
 
 export type SessionInformation = {
@@ -67,18 +67,23 @@ export const findPersonByEmail = async (
   email: string,
   mustBeVerified: boolean
 ): Promise<number> => {
-  let statement = 'select Id from HSIPeople where Email = ?'
+  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+  let config: { where: SQL<any> | undefined } = {
+    where: eq(schema.HSIPeople.Email, email),
+  }
   if (mustBeVerified) {
-    statement += ' and IsVerified = 1'
+    config.where = and(
+      eq(schema.HSIPeople.Email, email),
+      eq(schema.HSIPeople.IsVerified, true)
+    )
   }
+  const result = await db.query.HSIPeople.findFirst(config)
 
-  const queryResults = await runDatabaseAction(context, statement, email)
-  let result = UNKNOWN_PERSON_ID
-  if (queryResults?.results?.length > 0) {
-    result = queryResults.results[0].Id
+  if (result != null && result.Id > 0) {
+    return result.Id
+  } else {
+    return UNKNOWN_PERSON_ID
   }
-
-  return result
 }
 
 export const createNewSession = async (
