@@ -105,13 +105,27 @@ const sessionHasTimedOut = async (
   return found
 }
 
+const redirectWithErrorMessage = (
+  c: LocalContext,
+  message: string,
+  path: string
+) => {
+  setCookie(c, ERROR_MESSAGE_COOKIE, message)
+  return c.redirect(path, StatusCodes.SEE_OTHER)
+}
+
+const redirectNoMessage = (c: LocalContext, path: string) => {
+  deleteCookie(c, ERROR_MESSAGE_COOKIE)
+  return c.redirect(path, StatusCodes.SEE_OTHER)
+}
+
 export const setupSubmitCodePath = (app: HonoApp) => {
   app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
     return await withSession(
       c,
       async (sessionIsValid, sessionId, sessionInfo) => {
         if (!sessionIsValid || sessionInfo == null) {
-          return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+          return redirectNoMessage(c, SIGN_IN_PATH)
         }
 
         const body: SubmitCodeBody = await c.req.parseBody()
@@ -120,17 +134,16 @@ export const setupSubmitCodePath = (app: HonoApp) => {
 
         if (emailSubmitted.trim().length === 0) {
           // TODO: handle email not found
-          return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+          return redirectNoMessage(c, SIGN_IN_PATH)
         }
 
         const timedOut = await sessionHasTimedOut(c, codeSubmitted, sessionInfo)
         if (timedOut) {
-          setCookie(
+          return redirectWithErrorMessage(
             c,
-            ERROR_MESSAGE_COOKIE,
-            'That code has expired, please sign in again'
+            'That code has expired, please sign in again',
+            SIGN_IN_PATH
           )
-          return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
         }
 
         if (codeSubmitted.trim().length > 0) {
@@ -142,24 +155,21 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             sessionInfo as SessionInformation
           )
           if (isValid === ValidationResult.InvalidCode) {
-            setCookie(
+            return redirectWithErrorMessage(
               c,
-              ERROR_MESSAGE_COOKIE,
-              'That is the wrong code. Please try again.'
+              'That is the wrong code. Please try again.',
+              AWAIT_CODE_PATH
             )
-            return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
           }
 
           if (isValid === ValidationResult.InvalidSession) {
-            setCookie(
-              c,
-              ERROR_MESSAGE_COOKIE,
-              'That code has expired, please sign in again'
-            )
             deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
             deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
-
-            return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+            return redirectWithErrorMessage(
+              c,
+              'That code has expired, please sign in again',
+              SIGN_IN_PATH
+            )
           }
 
           const content = {
@@ -168,15 +178,14 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           await rememberUserSignedIn(c, content, sessionId as string)
           deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
           deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
-          return c.redirect(PROTECTED_PATH, StatusCodes.SEE_OTHER)
+          return redirectNoMessage(c, PROTECTED_PATH)
         }
 
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          ERROR_MESSAGE_COOKIE,
-          "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again."
+          "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
+          AWAIT_CODE_PATH
         )
-        return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
       }
     )
   })
