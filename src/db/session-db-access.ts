@@ -27,12 +27,15 @@ export type SessionOnly = {
 
 export type SessionDeleteList = SessionOnly[]
 
+const getDb = (context: LocalContext) => {
+  return drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+}
+
 export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformation>> => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  const results = await db.query.HSISession.findFirst({
+  const results = await getDb(context).query.HSISession.findFirst({
     where: eq(schema.HSISession.Session, sessionId),
   })
 
@@ -48,7 +51,6 @@ export const updateSessionContent = async (
   content: object,
   sessionId: string
 ) => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
   const setContent: { Content: string; Timestamp?: string } = {
     Content: JSON.stringify(content),
   }
@@ -56,7 +58,7 @@ export const updateSessionContent = async (
     setContent.Timestamp = date.toISOString()
   }
 
-  return db
+  return getDb(context)
     .update(schema.HSISession)
     .set(setContent)
     .where(eq(schema.HSISession.Session, sessionId))
@@ -67,7 +69,6 @@ export const findPersonByEmail = async (
   email: string,
   mustBeVerified: boolean
 ): Promise<number> => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
   let config: { where: SQL<any> | undefined } = {
     where: eq(schema.HSIPeople.Email, email),
   }
@@ -77,7 +78,7 @@ export const findPersonByEmail = async (
       eq(schema.HSIPeople.IsVerified, true)
     )
   }
-  const result = await db.query.HSIPeople.findFirst(config)
+  const result = await getDb(context).query.HSIPeople.findFirst(config)
 
   if (result != null && result.Id > 0) {
     return result.Id
@@ -93,22 +94,22 @@ export const createNewSession = async (
   date: Date,
   sessionContent: object
 ) => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  return db.insert(schema.HSISession).values({
-    PersonId: personId,
-    Session: sessionId,
-    SignedIn: false,
-    Timestamp: date.toISOString(),
-    Content: JSON.stringify(sessionContent),
-  })
+  return getDb(context)
+    .insert(schema.HSISession)
+    .values({
+      PersonId: personId,
+      Session: sessionId,
+      SignedIn: false,
+      Timestamp: date.toISOString(),
+      Content: JSON.stringify(sessionContent),
+    })
 }
 
 export const removeSessionFromDb = async (
   context: LocalContext,
   sessionId: string
 ) => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  return db
+  return getDb(context)
     .delete(schema.HSISession)
     .where(eq(schema.HSISession.Session, sessionId))
 }
@@ -118,8 +119,7 @@ export const removeOldUserSessionsFromDb = async (
   userInfo: SessionInformation,
   tooOld: Date
 ): Promise<SessionDeleteList> => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  return db
+  return getDb(context)
     .delete(schema.HSISession)
     .where(
       and(
@@ -137,8 +137,7 @@ export const rememberUserSignedIn = async (
   sessionContent: object,
   sessionId: string
 ) => {
-  const db = drizzle(context.env.HTML_SIGN_IN_DB, { schema })
-  return db
+  return getDb(context)
     .update(schema.HSISession)
     .set({
       Content: JSON.stringify(sessionContent),
