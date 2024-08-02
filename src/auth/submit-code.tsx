@@ -73,6 +73,38 @@ const codeIsValid = async (
   return ValidationResult.Success
 }
 
+const sessionHasTimedOut = async (
+  c: LocalContext,
+  codeSubmitted: string,
+  sessionInfo: SessionInformation
+) => {
+  let delay = SIGN_IN_TIMEOUT
+  // PRODUCTION:REMOVE-NEXT-LINE
+  if (codeSubmitted === '111111') {
+    delay = 1 // PRODUCTION:REMOVE
+  } // PRODUCTION:REMOVE
+
+  const now = dayjs()
+  let tooOld = now.subtract(delay)
+  const removeResults = await removeOldUserSessionsFromDb(
+    c,
+    sessionInfo,
+    tooOld.toDate()
+  )
+
+  let found = false
+  if (removeResults != null && removeResults?.length > 0) {
+    for (let index = 0; index < removeResults.length; index += 1) {
+      if (sessionInfo.Session === removeResults[index].Session) {
+        found = true
+        break
+      }
+    }
+  }
+
+  return found
+}
+
 export const setupSubmitCodePath = (app: HonoApp) => {
   app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
     return await withSession(
@@ -91,37 +123,14 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
         }
 
-        let delay = SIGN_IN_TIMEOUT
-        // PRODUCTION:REMOVE-NEXT-LINE
-        if (codeSubmitted === '111111') {
-          delay = 1 // PRODUCTION:REMOVE
-        } // PRODUCTION:REMOVE
-
-        const now = dayjs()
-        let tooOld = now.subtract(delay)
-        const removeResults = await removeOldUserSessionsFromDb(
-          c,
-          sessionInfo,
-          tooOld.toDate()
-        )
-
-        if (removeResults != null && removeResults?.length > 0) {
-          let found = false
-          for (let index = 0; index < removeResults.length; index += 1) {
-            if (sessionInfo.Session === removeResults[index].Session) {
-              found = true
-              break
-            }
-          }
-
-          if (found) {
-            setCookie(
-              c,
-              ERROR_MESSAGE_COOKIE,
-              'That code has expired, please sign in again'
-            )
-            return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
-          }
+        const timedOut = await sessionHasTimedOut(c, codeSubmitted, sessionInfo)
+        if (timedOut) {
+          setCookie(
+            c,
+            ERROR_MESSAGE_COOKIE,
+            'That code has expired, please sign in again'
+          )
+          return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
         }
 
         if (codeSubmitted.trim().length > 0) {
