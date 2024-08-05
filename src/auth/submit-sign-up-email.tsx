@@ -61,7 +61,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
     }
 
     let errorMessage = ''
-    if (email.trim().length === 0) {
+    if (!emailFound) {
       errorMessage = 'You must supply an email address'
     } else if (signupCode.trim().length === 0) {
       errorMessage = 'You must supply a sign-up code'
