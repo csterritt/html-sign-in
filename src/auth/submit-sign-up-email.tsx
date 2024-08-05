@@ -1,12 +1,9 @@
-import { deleteCookie, setCookie } from 'hono/cookie'
-import { StatusCodes } from 'http-status-codes'
+import { setCookie } from 'hono/cookie'
 
 import {
   AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
-  ERROR_MESSAGE_COOKIE,
   SESSION_COOKIE,
-  SIGN_IN_PATH,
   SIGN_UP_PATH,
   STANDARD_COOKIE_OPTIONS,
   SUBMIT_SIGN_UP_EMAIL_PATH,
@@ -15,6 +12,7 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
 import { getSessionId } from '../db/get-session-id'
+import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
 
 type SubmitSignUpEmailBody = {
   email?: string
@@ -26,29 +24,30 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
     const body: SubmitSignUpEmailBody = await c.req.parseBody()
     const email = body.email ?? ''
     const signupCode = body.signupCode ?? ''
+    let personId: number = UNKNOWN_PERSON_ID
+    let emailFound: boolean = false
 
-    if (email.trim().length > 0 && signupCode.trim().length > 0) {
+    if (email.trim().length > 0) {
+      emailFound = true
       setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
-      const personId = await findPersonByEmail(c, email, true)
+      personId = await findPersonByEmail(c, email, false)
       if (personId !== UNKNOWN_PERSON_ID) {
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          ERROR_MESSAGE_COOKIE,
           `There is already an account for ${email}, please sign in instead`,
-          STANDARD_COOKIE_OPTIONS
+          SIGN_UP_PATH
         )
-        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
+    }
 
+    if (emailFound && signupCode.trim().length > 0) {
       const sessionResults = await getSessionId(c, personId, email, signupCode)
       if (sessionResults.sessionCreateFailed) {
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          ERROR_MESSAGE_COOKIE,
           'Failed to create session',
-          STANDARD_COOKIE_OPTIONS
+          SIGN_UP_PATH
         )
-        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
       setCookie(
@@ -57,26 +56,17 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
         sessionResults.sessionId,
         STANDARD_COOKIE_OPTIONS
       )
-      deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
-      return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
+
+      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
     }
 
+    let errorMessage = ''
     if (email.trim().length === 0) {
-      setCookie(
-        c,
-        ERROR_MESSAGE_COOKIE,
-        'You must supply an email address',
-        STANDARD_COOKIE_OPTIONS
-      )
+      errorMessage = 'You must supply an email address'
     } else if (signupCode.trim().length === 0) {
-      setCookie(
-        c,
-        ERROR_MESSAGE_COOKIE,
-        'You must supply a sign-up code',
-        STANDARD_COOKIE_OPTIONS
-      )
+      errorMessage = 'You must supply a sign-up code'
     }
 
-    return c.redirect(SIGN_UP_PATH, StatusCodes.SEE_OTHER)
+    return redirectWithErrorMessage(c, errorMessage, SIGN_UP_PATH)
   })
 }

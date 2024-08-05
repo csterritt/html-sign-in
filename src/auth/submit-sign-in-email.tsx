@@ -1,10 +1,8 @@
-import { deleteCookie, setCookie } from 'hono/cookie'
-import { StatusCodes } from 'http-status-codes'
+import { setCookie } from 'hono/cookie'
 
 import {
   AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
-  ERROR_MESSAGE_COOKIE,
   SESSION_COOKIE,
   SIGN_IN_PATH,
   STANDARD_COOKIE_OPTIONS,
@@ -14,6 +12,7 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
 import { getSessionId } from '../db/get-session-id'
+import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
 // import { sendCodeEMail } from '../db/send-email' // PRODUCTION:UNCOMMENT
 
 type SubmitEmailBody = {
@@ -29,24 +28,20 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
       setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
       const personId = await findPersonByEmail(c, email, true)
       if (personId === UNKNOWN_PERSON_ID) {
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          ERROR_MESSAGE_COOKIE,
           `Unknown email address: ${email}`,
-          STANDARD_COOKIE_OPTIONS
+          SIGN_IN_PATH
         )
-        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
       const sessionResults = await getSessionId(c, personId, email)
       if (sessionResults.sessionCreateFailed) {
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          ERROR_MESSAGE_COOKIE,
           'Failed to create session',
-          STANDARD_COOKIE_OPTIONS
+          SIGN_IN_PATH
         )
-        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
       setCookie(
@@ -55,20 +50,17 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
         sessionResults.sessionId,
         STANDARD_COOKIE_OPTIONS
       )
-      deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
 
       console.log(`signUpCode is ${JSON.stringify(sessionResults.signInCode)}`) // PRODUCTION:REMOVE
       // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
 
-      return c.redirect(AWAIT_CODE_PATH, StatusCodes.SEE_OTHER)
+      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
     }
 
-    setCookie(
+    return redirectWithErrorMessage(
       c,
-      ERROR_MESSAGE_COOKIE,
       'You must supply an email address',
-      STANDARD_COOKIE_OPTIONS
+      SIGN_IN_PATH
     )
-    return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
   })
 }

@@ -1,11 +1,9 @@
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
-import { StatusCodes } from 'http-status-codes'
+import { deleteCookie, getCookie } from 'hono/cookie'
 import dayjs from 'dayjs/esm'
 
 import {
   AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
-  ERROR_MESSAGE_COOKIE,
   PROTECTED_PATH,
   SESSION_COOKIE,
   SIGN_IN_PATH,
@@ -21,6 +19,7 @@ import {
   updateSessionContent,
 } from '../db/session-db-access'
 import { withSession } from './with-session'
+import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
 
 type SubmitCodeBody = {
   code?: string
@@ -105,27 +104,13 @@ const sessionHasTimedOut = async (
   return found
 }
 
-const redirectWithErrorMessage = (
-  c: LocalContext,
-  message: string,
-  path: string
-) => {
-  setCookie(c, ERROR_MESSAGE_COOKIE, message)
-  return c.redirect(path, StatusCodes.SEE_OTHER)
-}
-
-const redirectNoMessage = (c: LocalContext, path: string) => {
-  deleteCookie(c, ERROR_MESSAGE_COOKIE)
-  return c.redirect(path, StatusCodes.SEE_OTHER)
-}
-
 export const setupSubmitCodePath = (app: HonoApp) => {
   app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
     return await withSession(
       c,
       async (sessionIsValid, sessionId, sessionInfo) => {
-        if (!sessionIsValid || sessionInfo == null) {
-          return redirectNoMessage(c, SIGN_IN_PATH)
+        if (!sessionIsValid || sessionInfo == null || sessionId == null) {
+          return redirectWithNoMessage(c, SIGN_IN_PATH)
         }
 
         const body: SubmitCodeBody = await c.req.parseBody()
@@ -134,7 +119,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
 
         if (emailSubmitted.trim().length === 0) {
           // TODO: handle email not found
-          return redirectNoMessage(c, SIGN_IN_PATH)
+          return redirectWithNoMessage(c, SIGN_IN_PATH)
         }
 
         const timedOut = await sessionHasTimedOut(c, codeSubmitted, sessionInfo)
@@ -151,8 +136,8 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             c,
             emailSubmitted,
             codeSubmitted,
-            sessionId as string,
-            sessionInfo as SessionInformation
+            sessionId,
+            sessionInfo
           )
           if (isValid === ValidationResult.InvalidCode) {
             return redirectWithErrorMessage(
@@ -175,10 +160,9 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           const content = {
             email: emailSubmitted,
           }
-          await rememberUserSignedIn(c, content, sessionId as string)
+          await rememberUserSignedIn(c, content, sessionId)
           deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-          deleteCookie(c, ERROR_MESSAGE_COOKIE, STANDARD_COOKIE_OPTIONS)
-          return redirectNoMessage(c, PROTECTED_PATH)
+          return redirectWithNoMessage(c, PROTECTED_PATH)
         }
 
         return redirectWithErrorMessage(

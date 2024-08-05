@@ -1,5 +1,4 @@
 import { getCookie } from 'hono/cookie'
-import { StatusCodes } from 'http-status-codes'
 
 import { HonoApp, LocalContext } from '../bindings'
 import {
@@ -10,6 +9,7 @@ import {
 } from '../constants'
 import { buildSignInPage } from '../page-builders/build-sign-in-page'
 import { withSession } from './with-session'
+import { redirectWithNoMessage } from '../redirects'
 
 export const setupSignInPath = (app: HonoApp) => {
   app.get(SIGN_IN_PATH, async (c: LocalContext) => {
@@ -18,7 +18,7 @@ export const setupSignInPath = (app: HonoApp) => {
 
     return await withSession(c, async (sessionIsValid) => {
       if (sessionIsValid) {
-        return c.redirect(PROTECTED_PATH, StatusCodes.SEE_OTHER)
+        return redirectWithNoMessage(c, PROTECTED_PATH)
       }
 
       return buildSignInPage(emailSubmitted, { error: errorMessage })(c)
