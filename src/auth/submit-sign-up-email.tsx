@@ -1,7 +1,9 @@
 import { setCookie } from 'hono/cookie'
+import { bodyLimit } from 'hono/body-limit'
 
 import {
   AWAIT_CODE_PATH,
+  BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
   SESSION_COOKIE,
   SIGN_UP_PATH,
@@ -20,53 +22,62 @@ type SubmitSignUpEmailBody = {
 }
 
 export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
-  app.post(SUBMIT_SIGN_UP_EMAIL_PATH, async (c: LocalContext) => {
-    const body: SubmitSignUpEmailBody = await c.req.parseBody()
-    const email = body.email ?? ''
-    const signupCode = body.signupCode ?? ''
-    let personId: number = UNKNOWN_PERSON_ID
-    let emailFound: boolean = false
+  app.post(
+    SUBMIT_SIGN_UP_EMAIL_PATH,
+    bodyLimit(BODY_LIMIT_OPTIONS),
+    async (c: LocalContext) => {
+      const body: SubmitSignUpEmailBody = await c.req.parseBody()
+      const email = body.email ?? ''
+      const signupCode = body.signupCode ?? ''
+      let personId: number = UNKNOWN_PERSON_ID
+      let emailFound: boolean = false
 
-    if (email.trim().length > 0) {
-      emailFound = true
-      setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
-      personId = await findPersonByEmail(c, email, false)
-      if (personId !== UNKNOWN_PERSON_ID) {
-        return redirectWithErrorMessage(
-          c,
-          `There is already an account for ${email}, please sign in instead`,
-          SIGN_UP_PATH
-        )
-      }
-    }
-
-    if (emailFound && signupCode.trim().length > 0) {
-      const sessionResults = await getSessionId(c, personId, email, signupCode)
-      if (sessionResults.sessionCreateFailed) {
-        return redirectWithErrorMessage(
-          c,
-          'Failed to create session',
-          SIGN_UP_PATH
-        )
+      if (email.trim().length > 0) {
+        emailFound = true
+        setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
+        personId = await findPersonByEmail(c, email, false)
+        if (personId !== UNKNOWN_PERSON_ID) {
+          return redirectWithErrorMessage(
+            c,
+            `There is already an account for ${email}, please sign in instead`,
+            SIGN_UP_PATH
+          )
+        }
       }
 
-      setCookie(
-        c,
-        SESSION_COOKIE,
-        sessionResults.sessionId,
-        STANDARD_COOKIE_OPTIONS
-      )
+      if (emailFound && signupCode.trim().length > 0) {
+        const sessionResults = await getSessionId(
+          c,
+          personId,
+          email,
+          signupCode
+        )
+        if (sessionResults.sessionCreateFailed) {
+          return redirectWithErrorMessage(
+            c,
+            'Failed to create session',
+            SIGN_UP_PATH
+          )
+        }
 
-      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
+        setCookie(
+          c,
+          SESSION_COOKIE,
+          sessionResults.sessionId,
+          STANDARD_COOKIE_OPTIONS
+        )
+
+        return redirectWithNoMessage(c, AWAIT_CODE_PATH)
+      }
+
+      let errorMessage = ''
+      if (!emailFound) {
+        errorMessage = 'You must supply an email address'
+      } else if (signupCode.trim().length === 0) {
+        errorMessage = 'You must supply a sign-up code'
+      }
+
+      return redirectWithErrorMessage(c, errorMessage, SIGN_UP_PATH)
     }
-
-    let errorMessage = ''
-    if (!emailFound) {
-      errorMessage = 'You must supply an email address'
-    } else if (signupCode.trim().length === 0) {
-      errorMessage = 'You must supply a sign-up code'
-    }
-
-    return redirectWithErrorMessage(c, errorMessage, SIGN_UP_PATH)
-  })
+  )
 }

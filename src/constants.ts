@@ -35,3 +35,11 @@ export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
 export const ERROR_MESSAGE_COOKIE = 'error-message'
 export const SESSION_COOKIE = 'session-id'
+
+export const BODY_LIMIT_OPTIONS = {
+  maxSize: 4 * 1024, // 4kb
+  onError: (c: any) => {
+    console.log(`body too large, max size is 4kb`)
+    return c.text('overflow :(', 413)
+  },
+}

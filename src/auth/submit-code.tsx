@@ -1,8 +1,10 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
+import { bodyLimit } from 'hono/body-limit'
 import dayjs from 'dayjs/esm'
 
 import {
   AWAIT_CODE_PATH,
+  BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
   PROTECTED_PATH,
   SESSION_COOKIE,
@@ -105,51 +107,32 @@ const sessionHasTimedOut = async (
 }
 
 export const setupSubmitCodePath = (app: HonoApp) => {
-  app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
-    return await withSession(
-      c,
-      async (sessionIsValid, sessionId, sessionInfo) => {
-        if (!sessionIsValid || sessionInfo == null || sessionId == null) {
-          return redirectWithNoMessage(c, SIGN_IN_PATH)
-        }
-
-        const body: SubmitCodeBody = await c.req.parseBody()
-        const codeSubmitted = body.code ?? ''
-        const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
-
-        if (emailSubmitted.trim().length === 0) {
-          // TODO: handle email not found
-          return redirectWithNoMessage(c, SIGN_IN_PATH)
-        }
-
-        const timedOut = await sessionHasTimedOut(c, codeSubmitted, sessionInfo)
-        if (timedOut) {
-          return redirectWithErrorMessage(
-            c,
-            'That code has expired, please sign in again',
-            SIGN_IN_PATH
-          )
-        }
-
-        if (codeSubmitted.trim().length > 0) {
-          const isValid = await codeIsValid(
-            c,
-            emailSubmitted,
-            codeSubmitted,
-            sessionId,
-            sessionInfo
-          )
-          if (isValid === ValidationResult.InvalidCode) {
-            return redirectWithErrorMessage(
-              c,
-              'That is the wrong code. Please try again.',
-              AWAIT_CODE_PATH
-            )
+  app.post(
+    SUBMIT_CODE_PATH,
+    bodyLimit(BODY_LIMIT_OPTIONS),
+    async (c: LocalContext) => {
+      return await withSession(
+        c,
+        async (sessionIsValid, sessionId, sessionInfo) => {
+          if (!sessionIsValid || sessionInfo == null || sessionId == null) {
+            return redirectWithNoMessage(c, SIGN_IN_PATH)
           }
 
-          if (isValid === ValidationResult.InvalidSession) {
-            deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-            deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+          const body: SubmitCodeBody = await c.req.parseBody()
+          const codeSubmitted = body.code ?? ''
+          const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
+
+          if (emailSubmitted.trim().length === 0) {
+            // TODO: handle email not found
+            return redirectWithNoMessage(c, SIGN_IN_PATH)
+          }
+
+          const timedOut = await sessionHasTimedOut(
+            c,
+            codeSubmitted,
+            sessionInfo
+          )
+          if (timedOut) {
             return redirectWithErrorMessage(
               c,
               'That code has expired, please sign in again',
@@ -157,20 +140,47 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             )
           }
 
-          const content = {
-            email: emailSubmitted,
-          }
-          await rememberUserSignedIn(c, content, sessionId)
-          deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-          return redirectWithNoMessage(c, PROTECTED_PATH)
-        }
+          if (codeSubmitted.trim().length > 0) {
+            const isValid = await codeIsValid(
+              c,
+              emailSubmitted,
+              codeSubmitted,
+              sessionId,
+              sessionInfo
+            )
+            if (isValid === ValidationResult.InvalidCode) {
+              return redirectWithErrorMessage(
+                c,
+                'That is the wrong code. Please try again.',
+                AWAIT_CODE_PATH
+              )
+            }
 
-        return redirectWithErrorMessage(
-          c,
-          "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
-          AWAIT_CODE_PATH
-        )
-      }
-    )
-  })
+            if (isValid === ValidationResult.InvalidSession) {
+              deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+              deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+              return redirectWithErrorMessage(
+                c,
+                'That code has expired, please sign in again',
+                SIGN_IN_PATH
+              )
+            }
+
+            const content = {
+              email: emailSubmitted,
+            }
+            await rememberUserSignedIn(c, content, sessionId)
+            deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+            return redirectWithNoMessage(c, PROTECTED_PATH)
+          }
+
+          return redirectWithErrorMessage(
+            c,
+            "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
+            AWAIT_CODE_PATH
+          )
+        }
+      )
+    }
+  )
 }
