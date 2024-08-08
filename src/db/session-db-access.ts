@@ -200,6 +200,7 @@ export const addNewUserWithEmailAndCode = async (
     sessionId: '',
     signInCode: '',
     signUpCode: '',
+    // TODO: Add error code here, set according to what goes wrong below
   }
 
   let takeCodeResults = await runDatabaseAction(
