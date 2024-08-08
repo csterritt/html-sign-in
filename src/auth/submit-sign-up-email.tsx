@@ -12,8 +12,10 @@ import {
   UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
-import { findPersonByEmail } from '../db/session-db-access'
-import { getSessionId } from '../db/get-session-id'
+import {
+  addNewUserWithEmailAndCode,
+  findPersonByEmail,
+} from '../db/session-db-access'
 import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
 
 type SubmitSignUpEmailBody = {
@@ -46,16 +48,15 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
       }
 
       if (emailFound && signupCode.trim().length > 0) {
-        const sessionResults = await getSessionId(
+        const signUpResults = await addNewUserWithEmailAndCode(
           c,
-          personId,
           email,
           signupCode
         )
-        if (sessionResults.sessionCreateFailed) {
+        if (!signUpResults.success) {
           return redirectWithErrorMessage(
             c,
-            'Failed to create session',
+            'Failed to add new user',
             SIGN_UP_PATH
           )
         }
@@ -63,7 +64,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
         setCookie(
           c,
           SESSION_COOKIE,
-          sessionResults.sessionId,
+          signUpResults.sessionId,
           STANDARD_COOKIE_OPTIONS
         )
 

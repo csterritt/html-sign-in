@@ -4,7 +4,8 @@
     "dev": "./run-dev.sh",
     "build": "./do-prod-build.sh",
     "preview": "wrangler pages dev dist",
-    "deploy": "$npm_execpath run build && wrangler pages deploy dist"
+    "deploy": "$npm_execpath run build && wrangler pages deploy dist",
+    "setup-random-sign-up-code": "node e2e-tests/support/setup-random-sign-up-code.js | /usr/bin/env tail -1"
   },
   "dependencies": {
     "dayjs": "^1.11.12",
