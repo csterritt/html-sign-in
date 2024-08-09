@@ -15,5 +15,10 @@ export const HSIPeople = sqliteTable('HSIPeople', {
   IsVerified: integer('IsVerified', { mode: 'boolean' })
     .notNull()
     .default(false),
-  AddedTimestamp: text('Timestamp').notNull(),
+  AddedTimestamp: text('AddedTimestamp').notNull(),
+})
+
+export const HSISignUpCodes = sqliteTable('HSISignUpCodes', {
+  Code: text('Code').primaryKey(),
+  Email: text('Email').notNull(),
 })

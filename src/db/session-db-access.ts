@@ -1,7 +1,6 @@
 import { drizzle } from 'drizzle-orm/d1'
 
 import { getSessionId } from './get-session-id'
-import { runDatabaseAction } from './run-db-action'
 import {
   ADD_NEW_USER_ADD_USER_FAILED,
   ADD_NEW_USER_GET_SESSION_FAILED,
@@ -181,43 +180,41 @@ export const rememberUserCreated = async (
   email: string,
   signUpCode: string
 ): Promise<boolean> => {
-  const userUpdateResults = await runDatabaseAction(
-    context,
-    'update HSIPeople set IsVerified = 1 where Email = ?',
-    email
-  )
+  const userUpdateResults = await getDb(context)
+    .update(schema.HSIPeople)
+    .set({
+      IsVerified: true,
+    })
+    .where(eq(schema.HSIPeople.Email, email))
 
-  if (!userUpdateResults.success) {
+  if (
+    userUpdateResults == null ||
+    !userUpdateResults.success ||
+    !userUpdateResults.meta?.changed_db
+  ) {
     console.log(`rememberUserCreated failed user update`)
     return false
   }
 
-  if (userUpdateResults?.success && userUpdateResults.meta?.changed_db) {
-    const sessionUpdateResults = await runDatabaseAction(
-      context,
-      'update HSISession set SignedIn = 1, Content = ? where Session = ?',
-      JSON.stringify({ email }),
-      sessionId
-    )
+  const sessionUpdateResults = await getDb(context)
+    .update(schema.HSISession)
+    .set({
+      SignedIn: true,
+      Content: JSON.stringify({ email }),
+    })
+    .where(eq(schema.HSISession.Session, sessionId))
 
-    if (
-      sessionUpdateResults?.success &&
-      sessionUpdateResults.meta?.changed_db
-    ) {
-      console.log(`deleting sign up code '${JSON.stringify(signUpCode)}'`)
-      const deleteCodeResults = await runDatabaseAction(
-        context,
-        'delete from HSISignUpCodes where Code = ?',
-        signUpCode
-      )
+  if (sessionUpdateResults?.success && sessionUpdateResults.meta?.changed_db) {
+    const deleteCodeResults = await getDb(context)
+      .delete(schema.HSISignUpCodes)
+      .where(eq(schema.HSISignUpCodes.Code, signUpCode))
 
-      if (!deleteCodeResults?.success || !deleteCodeResults?.meta?.changed_db) {
-        console.log(`rememberUserCreated failed to delete used sign up code`)
-      }
-    } else {
-      console.log(`rememberUserCreated failed session update`)
-      return false
+    if (!deleteCodeResults?.success || !deleteCodeResults?.meta?.changed_db) {
+      console.log(`rememberUserCreated failed to delete used sign up code`)
     }
+  } else {
+    console.log(`rememberUserCreated failed session update`)
+    return false
   }
 
   return true
@@ -237,27 +234,30 @@ export const addNewUserWithEmailAndCode = async (
     errorCode: ADD_NEW_USER_OTHER_PROBLEM,
   }
 
-  let takeCodeResults = await runDatabaseAction(
-    context,
-    'update HSISignUpCodes set Email = ? where Code = ? and Email = "not an email"',
-    email,
-    signUpCode
-  )
-
-  if (takeCodeResults?.success && takeCodeResults.meta?.changed_db) {
-    let addUserResults = await runDatabaseAction(
-      context,
-      'insert into HSIPeople (Email, IsVerified, AddedTimestamp) values (?, 0, ?) returning Id',
-      email,
-      new Date().toISOString()
+  let takeCodeResults = await getDb(context)
+    .update(schema.HSISignUpCodes)
+    .set({
+      Email: email,
+    })
+    .where(
+      and(
+        eq(schema.HSISignUpCodes.Code, signUpCode),
+        eq(schema.HSISignUpCodes.Email, 'not an email')
+      )
     )
 
-    if (
-      addUserResults?.success &&
-      addUserResults.meta?.changed_db &&
-      addUserResults?.results[0]?.Id > 0
-    ) {
-      const personId = addUserResults.results[0].Id
+  if (takeCodeResults?.success && takeCodeResults.meta?.changed_db) {
+    let addUserResults = await getDb(context)
+      .insert(schema.HSIPeople)
+      .values({
+        Email: email,
+        IsVerified: false,
+        AddedTimestamp: new Date().toISOString(),
+      })
+      .returning({ Id: schema.HSIPeople.Id })
+
+    if (addUserResults != null && addUserResults[0].Id > 0) {
+      const personId = addUserResults[0].Id
       const { sessionId, signInCode, sessionCreateFailed } = await getSessionId(
         context,
         personId,
