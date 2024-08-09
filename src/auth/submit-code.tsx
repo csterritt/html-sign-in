@@ -15,6 +15,9 @@ import {
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import {
+  findCompletePersonByEmail,
+  findPersonByEmail,
+  rememberUserCreated,
   rememberUserSignedIn,
   removeOldUserSessionsFromDb,
   SessionInformation,
@@ -119,7 +122,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           const body: SubmitCodeBody = await c.req.parseBody()
-          const codeSubmitted = body.code ?? ''
+          const codeSubmitted = (body.code ?? '').trim()
           const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
 
           if (emailSubmitted.trim().length === 0) {
@@ -166,10 +169,43 @@ export const setupSubmitCodePath = (app: HonoApp) => {
               )
             }
 
-            const content = {
-              email: emailSubmitted,
+            const userResults = await findCompletePersonByEmail(
+              c,
+              emailSubmitted
+            )
+            if (userResults == null) {
+              return redirectWithErrorMessage(
+                c,
+                'Internal error, please try again.',
+                SIGN_IN_PATH
+              )
             }
-            await rememberUserSignedIn(c, content, sessionId)
+
+            if (!userResults.IsVerified) {
+              const content = JSON.parse(
+                (sessionInfo.Content ?? '{}') as string
+              )
+              const rememberSuccess = await rememberUserCreated(
+                c,
+                sessionId,
+                emailSubmitted,
+                content.signUpCode ?? ''
+              )
+
+              if (!rememberSuccess) {
+                return redirectWithErrorMessage(
+                  c,
+                  'Internal error, please try again.',
+                  SIGN_IN_PATH
+                )
+              }
+            } else {
+              const content = {
+                email: emailSubmitted,
+              }
+              await rememberUserSignedIn(c, content, sessionId)
+            }
+
             deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
             return redirectWithNoMessage(c, PROTECTED_PATH)
           }

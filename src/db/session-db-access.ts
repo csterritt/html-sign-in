@@ -14,6 +14,13 @@ import { LocalContext } from '../bindings'
 import { and, eq, lt, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
 
+export type UserInformation = {
+  Id: number
+  Email: string
+  IsVerified: boolean
+  AddedTimestamp: string
+}
+
 export type SessionInformation = {
   Id: number
   PersonId: number
@@ -94,6 +101,21 @@ export const findPersonByEmail = async (
   }
 }
 
+export const findCompletePersonByEmail = async (
+  context: LocalContext,
+  email: string
+): Promise<UserInformation | null> => {
+  const result = await getDb(context).query.HSIPeople.findFirst({
+    where: eq(schema.HSIPeople.Email, email),
+  })
+
+  if (result != null && result.Id > 0) {
+    return result
+  } else {
+    return null
+  }
+}
+
 export const createNewSession = async (
   context: LocalContext,
   personId: number,
@@ -158,7 +180,7 @@ export const rememberUserCreated = async (
   sessionId: string,
   email: string,
   signUpCode: string
-) => {
+): Promise<boolean> => {
   const userUpdateResults = await runDatabaseAction(
     context,
     'update HSIPeople set IsVerified = 1 where Email = ?',
@@ -167,6 +189,7 @@ export const rememberUserCreated = async (
 
   if (!userUpdateResults.success) {
     console.log(`rememberUserCreated failed user update`)
+    return false
   }
 
   if (userUpdateResults?.success && userUpdateResults.meta?.changed_db) {
@@ -181,6 +204,7 @@ export const rememberUserCreated = async (
       sessionUpdateResults?.success &&
       sessionUpdateResults.meta?.changed_db
     ) {
+      console.log(`deleting sign up code '${JSON.stringify(signUpCode)}'`)
       const deleteCodeResults = await runDatabaseAction(
         context,
         'delete from HSISignUpCodes where Code = ?',
@@ -192,8 +216,11 @@ export const rememberUserCreated = async (
       }
     } else {
       console.log(`rememberUserCreated failed session update`)
+      return false
     }
   }
+
+  return true
 }
 
 export const addNewUserWithEmailAndCode = async (
