@@ -2,6 +2,8 @@ import { setCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
 
 import {
+  ADD_NEW_USER_MESSAGES,
+  ADD_NEW_USER_TAKE_CODE_FAILED,
   AWAIT_CODE_PATH,
   BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
@@ -54,9 +56,17 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
           signupCode
         )
         if (!signUpResults.success) {
+          if (signUpResults.errorCode === ADD_NEW_USER_TAKE_CODE_FAILED) {
+            return redirectWithErrorMessage(
+              c,
+              `That sign-up code is invalid`,
+              SIGN_UP_PATH
+            )
+          }
+
           return redirectWithErrorMessage(
             c,
-            `Failed to add new user: ${signUpResults.errorMessage}`,
+            `Failed to add new user: ${ADD_NEW_USER_MESSAGES.get(signUpResults.errorCode)}`,
             SIGN_UP_PATH
           )
         }

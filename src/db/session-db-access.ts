@@ -2,7 +2,14 @@ import { drizzle } from 'drizzle-orm/d1'
 
 import { getSessionId } from './get-session-id'
 import { runDatabaseAction } from './run-db-action'
-import { UNKNOWN_PERSON_ID } from '../constants'
+import {
+  ADD_NEW_USER_ADD_USER_FAILED,
+  ADD_NEW_USER_GET_SESSION_FAILED,
+  ADD_NEW_USER_OTHER_PROBLEM,
+  ADD_NEW_USER_SUCCESS,
+  ADD_NEW_USER_TAKE_CODE_FAILED,
+  UNKNOWN_PERSON_ID,
+} from '../constants'
 import { LocalContext } from '../bindings'
 import { and, eq, lt, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
@@ -200,7 +207,7 @@ export const addNewUserWithEmailAndCode = async (
     sessionId: '',
     signInCode: '',
     signUpCode: '',
-    errorMessage: '',
+    errorCode: ADD_NEW_USER_OTHER_PROBLEM,
   }
 
   let takeCodeResults = await runDatabaseAction(
@@ -232,7 +239,7 @@ export const addNewUserWithEmailAndCode = async (
       )
 
       if (sessionCreateFailed) {
-        res.errorMessage = 'get session id failed'
+        res.errorCode = ADD_NEW_USER_GET_SESSION_FAILED
       } else {
         res = {
           success: true,
@@ -240,14 +247,14 @@ export const addNewUserWithEmailAndCode = async (
           sessionId,
           signInCode,
           signUpCode,
-          errorMessage: '',
+          errorCode: ADD_NEW_USER_SUCCESS,
         }
       }
     } else {
-      res.errorMessage = 'add user failed'
+      res.errorCode = ADD_NEW_USER_ADD_USER_FAILED
     }
   } else {
-    res.errorMessage = 'take code failed'
+    res.errorCode = ADD_NEW_USER_TAKE_CODE_FAILED
   }
 
   return res
