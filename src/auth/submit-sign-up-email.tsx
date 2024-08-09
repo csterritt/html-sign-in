@@ -56,7 +56,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
         if (!signUpResults.success) {
           return redirectWithErrorMessage(
             c,
-            'Failed to add new user',
+            `Failed to add new user: ${signUpResults.errorMessage}`,
             SIGN_UP_PATH
           )
         }

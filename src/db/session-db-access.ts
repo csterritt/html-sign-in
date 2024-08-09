@@ -200,7 +200,7 @@ export const addNewUserWithEmailAndCode = async (
     sessionId: '',
     signInCode: '',
     signUpCode: '',
-    // TODO: Add error code here, set according to what goes wrong below
+    errorMessage: '',
   }
 
   let takeCodeResults = await runDatabaseAction(
@@ -231,16 +231,23 @@ export const addNewUserWithEmailAndCode = async (
         signUpCode
       )
 
-      if (!sessionCreateFailed) {
+      if (sessionCreateFailed) {
+        res.errorMessage = 'get session id failed'
+      } else {
         res = {
           success: true,
           personId,
           sessionId,
           signInCode,
           signUpCode,
+          errorMessage: '',
         }
       }
+    } else {
+      res.errorMessage = 'add user failed'
     }
+  } else {
+    res.errorMessage = 'take code failed'
   }
 
   return res
