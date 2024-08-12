@@ -1,5 +1,6 @@
 import { setCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
+import * as v from 'valibot'
 
 import {
   AWAIT_CODE_PATH,
@@ -21,52 +22,58 @@ type SubmitEmailBody = {
   email?: string
 }
 
+const LoginSchema = v.object({
+  email: v.pipe(v.string(), v.email(), v.minLength(4), v.maxLength(254)),
+})
+
 export const setupSubmitSignInEmailPath = (app: HonoApp) => {
   app.post(
     SUBMIT_SIGN_IN_EMAIL_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const body: SubmitEmailBody = await c.req.parseBody()
-      const email = body.email ?? ''
-
-      if (email.trim().length > 0) {
-        setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
-        const personId = await findPersonByEmail(c, email, true)
-        if (personId === UNKNOWN_PERSON_ID) {
-          return redirectWithErrorMessage(
-            c,
-            `Unknown email address: ${email}`,
-            SIGN_IN_PATH
-          )
-        }
-
-        const sessionResults = await getSessionId(c, personId, email)
-        if (sessionResults.sessionCreateFailed) {
-          return redirectWithErrorMessage(
-            c,
-            'Failed to create session',
-            SIGN_IN_PATH
-          )
-        }
-
-        setCookie(
+      let emailFound = ''
+      try {
+        const { email } = v.parse(LoginSchema, { email: body.email })
+        emailFound = email
+      } catch (error) {
+        return redirectWithErrorMessage(
           c,
-          SESSION_COOKIE,
-          sessionResults.sessionId,
-          STANDARD_COOKIE_OPTIONS
+          `Invalid email address: ${body.email}`,
+          SIGN_IN_PATH
         )
-
-        console.log(`signUpCode is ${sessionResults.signInCode}`) // PRODUCTION:REMOVE
-        // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
-
-        return redirectWithNoMessage(c, AWAIT_CODE_PATH)
       }
 
-      return redirectWithErrorMessage(
+      setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
+      const personId = await findPersonByEmail(c, emailFound, true)
+      if (personId === UNKNOWN_PERSON_ID) {
+        return redirectWithErrorMessage(
+          c,
+          `Invalid email address: ${emailFound}`,
+          SIGN_IN_PATH
+        )
+      }
+
+      const sessionResults = await getSessionId(c, personId, emailFound)
+      if (sessionResults.sessionCreateFailed) {
+        return redirectWithErrorMessage(
+          c,
+          'Failed to create session',
+          SIGN_IN_PATH
+        )
+      }
+
+      setCookie(
         c,
-        'You must supply an email address',
-        SIGN_IN_PATH
+        SESSION_COOKIE,
+        sessionResults.sessionId,
+        STANDARD_COOKIE_OPTIONS
       )
+
+      console.log(`signUpCode is ${sessionResults.signInCode}`) // PRODUCTION:REMOVE
+      // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
+
+      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
     }
   )
 }

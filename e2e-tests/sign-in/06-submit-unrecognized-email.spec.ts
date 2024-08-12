@@ -17,7 +17,7 @@ test('submit unrecognized email', async ({ page }) => {
   await findItemByTestId(page, 'sign-in-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(page, `Unknown email address: not.there@not.there`)
+  await verifyAlert(page, `Invalid email address: not.there@not.there`)
 
   await expect(page.getByTestId('email-input')).toHaveValue(
     'not.there@not.there'
