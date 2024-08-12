@@ -1,6 +1,7 @@
 #!/bin/bash
 set -Eeuo
 
+curl -s 'http://localhost:3000' > /dev/null || ( echo 'No local server running' ; exit 1 )
 ./clean-for-production.rb || exit 1
 echo clean
 git reset --hard HEAD

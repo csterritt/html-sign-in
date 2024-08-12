@@ -4,11 +4,15 @@
     "dev": "./run-dev.sh",
     "build": "./do-prod-build.sh",
     "preview": "wrangler pages dev dist",
-    "deploy": "$npm_execpath run build && wrangler pages deploy dist"
+    "deploy": "$npm_execpath run build && wrangler pages deploy dist",
+    "setup-random-sign-up-code": "node e2e-tests/support/setup-random-sign-up-code.js | /usr/bin/env tail -1"
   },
   "dependencies": {
+    "dayjs": "^1.11.12",
+    "drizzle-orm": "^0.32.0",
     "hono": "^4.5.0",
-    "http-status-codes": "^2.3.0"
+    "http-status-codes": "^2.3.0",
+    "valibot": "^0.37.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
@@ -19,6 +23,7 @@
     "@types/node": "^20.14.10",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.8",
+    "drizzle-kit": "^0.23.0",
     "globby": "^14.0.1",
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",

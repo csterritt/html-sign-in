@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 
 import {
   clickLink,
@@ -7,19 +7,17 @@ import {
   verifyAlert,
 } from '../support/finders'
 
-test('submit unrecognized email', async ({ page }) => {
+test('submit magic code that has timed out', async ({ page }) => {
   await page.goto('http://localhost:3000/')
   await clickLink(page, 'sign-in-link')
-  await fillInput(page, 'email', 'not.there@not.there')
+  await fillInput(page, 'email', 'fredfred@team439980.testinator.com')
+  await clickLink(page, 'submit')
+  await fillInput(page, 'code', '111111')
   await clickLink(page, 'submit')
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'sign-in-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(page, `Unknown email address: not.there@not.there`)
-
-  await expect(page.getByTestId('email-input')).toHaveValue(
-    'not.there@not.there'
-  )
+  await verifyAlert(page, 'That code has expired, please sign in again')
 })

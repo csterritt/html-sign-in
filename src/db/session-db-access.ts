@@ -1,28 +1,37 @@
+import { drizzle } from 'drizzle-orm/d1'
+
 import { getSessionId } from './get-session-id'
-import { runDatabaseAction } from './run-db-action'
-import { UNKNOWN_PERSON_ID } from '../constants'
+import {
+  ADD_NEW_USER_ADD_USER_FAILED,
+  ADD_NEW_USER_GET_SESSION_FAILED,
+  ADD_NEW_USER_OTHER_PROBLEM,
+  ADD_NEW_USER_SUCCESS,
+  ADD_NEW_USER_TAKE_CODE_FAILED,
+  UNKNOWN_PERSON_ID,
+} from '../constants'
 import { LocalContext } from '../bindings'
+import { and, eq, lt, SQL } from 'drizzle-orm'
+import * as schema from './session-schema'
+
+export type UserInformation = {
+  Id: number
+  Email: string
+  IsVerified: boolean
+  AddedTimestamp: string
+}
 
 export type SessionInformation = {
   Id: number
   PersonId: number
   Session: string
   Timestamp: string
-  SignedIn: number
+  SignedIn: boolean
   Content?: string
 }
 
 export type SessionQueryResults<ResultsType> = {
   success: boolean
-  meta: {
-    served_by: string
-    duration: number
-    changes: number
-    last_row_id: number
-    changed_db: boolean
-    size_after: number
-  }
-  results: ResultsType
+  results: ResultsType | undefined
 }
 
 export type SessionOnly = {
@@ -31,20 +40,21 @@ export type SessionOnly = {
 
 export type SessionDeleteList = SessionOnly[]
 
+const getDb = (context: LocalContext) => {
+  return drizzle(context.env.HTML_SIGN_IN_DB, { schema })
+}
+
 export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<SessionQueryResults<SessionInformation>> => {
-  const results = await runDatabaseAction(
-    context,
-    'select * from HSISession where Session = ?',
-    sessionId
-  )
+  const results = await getDb(context).query.HSISession.findFirst({
+    where: eq(schema.HSISession.Session, sessionId),
+  })
 
   return {
-    success: results?.success ?? false,
-    meta: results?.meta ?? {},
-    results: results?.results?.length > 0 ? results.results[0] : undefined,
+    success: results != null,
+    results,
   }
 }
 
@@ -54,22 +64,17 @@ export const updateSessionContent = async (
   content: object,
   sessionId: string
 ) => {
-  if (date == null) {
-    return runDatabaseAction(
-      context,
-      'update HSISession set Content = ? where Session = ?',
-      JSON.stringify(content),
-      sessionId
-    )
+  const setContent: { Content: string; Timestamp?: string } = {
+    Content: JSON.stringify(content),
+  }
+  if (date != null) {
+    setContent.Timestamp = date.toISOString()
   }
 
-  return runDatabaseAction(
-    context,
-    'update HSISession set Timestamp = ?, Content = ? where Session = ?',
-    date.toISOString(),
-    JSON.stringify(content),
-    sessionId
-  )
+  return getDb(context)
+    .update(schema.HSISession)
+    .set(setContent)
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const findPersonByEmail = async (
@@ -77,18 +82,37 @@ export const findPersonByEmail = async (
   email: string,
   mustBeVerified: boolean
 ): Promise<number> => {
-  let statement = 'select Id from HSIPeople where Email = ?'
+  let config: { where: SQL<any> | undefined } = {
+    where: eq(schema.HSIPeople.Email, email),
+  }
   if (mustBeVerified) {
-    statement += ' and IsVerified = 1'
+    config.where = and(
+      eq(schema.HSIPeople.Email, email),
+      eq(schema.HSIPeople.IsVerified, true)
+    )
   }
+  const result = await getDb(context).query.HSIPeople.findFirst(config)
 
-  const queryResults = await runDatabaseAction(context, statement, email)
-  let result = UNKNOWN_PERSON_ID
-  if (queryResults?.results?.length > 0) {
-    result = queryResults.results[0].Id
+  if (result != null && result.Id > 0) {
+    return result.Id
+  } else {
+    return UNKNOWN_PERSON_ID
   }
+}
 
-  return result
+export const findCompletePersonByEmail = async (
+  context: LocalContext,
+  email: string
+): Promise<UserInformation | null> => {
+  const result = await getDb(context).query.HSIPeople.findFirst({
+    where: eq(schema.HSIPeople.Email, email),
+  })
+
+  if (result != null && result.Id > 0) {
+    return result
+  } else {
+    return null
+  }
 }
 
 export const createNewSession = async (
@@ -98,35 +122,41 @@ export const createNewSession = async (
   date: Date,
   sessionContent: object
 ) => {
-  return runDatabaseAction(
-    context,
-    'insert into HSISession (PersonId, Session, SignedIn, Timestamp, Content) values (?, ?, FALSE, ?, ?)',
-    personId,
-    sessionId,
-    date.toISOString(),
-    JSON.stringify(sessionContent)
-  )
+  return getDb(context)
+    .insert(schema.HSISession)
+    .values({
+      PersonId: personId,
+      Session: sessionId,
+      SignedIn: false,
+      Timestamp: date.toISOString(),
+      Content: JSON.stringify(sessionContent),
+    })
 }
 
 export const removeSessionFromDb = async (
   context: LocalContext,
   sessionId: string
 ) => {
-  return runDatabaseAction(
-    context,
-    'delete from HSISession where Session = ?',
-    sessionId
-  )
+  return getDb(context)
+    .delete(schema.HSISession)
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const removeOldUserSessionsFromDb = async (
   context: LocalContext,
   userInfo: SessionInformation,
   tooOld: Date
-): Promise<SessionQueryResults<SessionDeleteList>> => {
-   const sqlStatement = `delete from HSISession where PersonId = ? and SignedIn = 0 and Timestamp < ? returning Session` 
-   const args = [userInfo.PersonId, tooOld.toISOString()] 
-  return runDatabaseAction(context, sqlStatement, ...args)
+): Promise<SessionDeleteList> => {
+  return getDb(context)
+    .delete(schema.HSISession)
+    .where(
+      and(
+           eq(schema.HSISession.PersonId, userInfo.PersonId), 
+        eq(schema.HSISession.SignedIn, false),
+        lt(schema.HSISession.Timestamp, tooOld.toISOString())
+      )
+    )
+    .returning()
 }
 
 export const rememberUserSignedIn = async (
@@ -134,12 +164,13 @@ export const rememberUserSignedIn = async (
   sessionContent: object,
   sessionId: string
 ) => {
-  return runDatabaseAction(
-    context,
-    'update HSISession set Content = ?, SignedIn = TRUE where Session = ?',
-    JSON.stringify(sessionContent),
-    sessionId
-  )
+  return getDb(context)
+    .update(schema.HSISession)
+    .set({
+      Content: JSON.stringify(sessionContent),
+      SignedIn: true,
+    })
+    .where(eq(schema.HSISession.Session, sessionId))
 }
 
 export const rememberUserCreated = async (
@@ -147,42 +178,45 @@ export const rememberUserCreated = async (
   sessionId: string,
   email: string,
   signUpCode: string
-) => {
-  const userUpdateResults = await runDatabaseAction(
-    context,
-    'update HSIPeople set IsVerified = 1 where Email = ?',
-    email
-  )
+): Promise<boolean> => {
+  const userUpdateResults = await getDb(context)
+    .update(schema.HSIPeople)
+    .set({
+      IsVerified: true,
+    })
+    .where(eq(schema.HSIPeople.Email, email))
 
-  if (!userUpdateResults.success) {
+  if (
+    userUpdateResults == null ||
+    !userUpdateResults.success ||
+    !userUpdateResults.meta?.changed_db
+  ) {
     console.log(`rememberUserCreated failed user update`)
+    return false
   }
 
-  if (userUpdateResults?.success && userUpdateResults.meta?.changed_db) {
-    const sessionUpdateResults = await runDatabaseAction(
-      context,
-      'update HSISession set SignedIn = 1, Content = ? where Session = ?',
-      JSON.stringify({ email }),
-      sessionId
-    )
+  const sessionUpdateResults = await getDb(context)
+    .update(schema.HSISession)
+    .set({
+      SignedIn: true,
+      Content: JSON.stringify({ email }),
+    })
+    .where(eq(schema.HSISession.Session, sessionId))
 
-    if (
-      sessionUpdateResults?.success &&
-      sessionUpdateResults.meta?.changed_db
-    ) {
-      const deleteCodeResults = await runDatabaseAction(
-        context,
-        'delete from HSISignUpCodes where Code = ?',
-        signUpCode
-      )
+  if (sessionUpdateResults?.success && sessionUpdateResults.meta?.changed_db) {
+    const deleteCodeResults = await getDb(context)
+      .delete(schema.HSISignUpCodes)
+      .where(eq(schema.HSISignUpCodes.Code, signUpCode))
 
-      if (!deleteCodeResults?.success || !deleteCodeResults?.meta?.changed_db) {
-        console.log(`rememberUserCreated failed to delete used sign up code`)
-      }
-    } else {
-      console.log(`rememberUserCreated failed session update`)
+    if (!deleteCodeResults?.success || !deleteCodeResults?.meta?.changed_db) {
+      console.log(`rememberUserCreated failed to delete used sign up code`)
     }
+  } else {
+    console.log(`rememberUserCreated failed session update`)
+    return false
   }
+
+  return true
 }
 
 export const addNewUserWithEmailAndCode = async (
@@ -196,29 +230,33 @@ export const addNewUserWithEmailAndCode = async (
     sessionId: '',
     signInCode: '',
     signUpCode: '',
+    errorCode: ADD_NEW_USER_OTHER_PROBLEM,
   }
 
-  let takeCodeResults = await runDatabaseAction(
-    context,
-    'update HSISignUpCodes set Email = ? where Code = ? and Email = "not an email"',
-    email,
-    signUpCode
-  )
-
-  if (takeCodeResults?.success && takeCodeResults.meta?.changed_db) {
-    let addUserResults = await runDatabaseAction(
-      context,
-      'insert into HSIPeople (Email, IsVerified, AddedTimestamp) values (?, 0, ?) returning Id',
-      email,
-      new Date().toISOString()
+  let takeCodeResults = await getDb(context)
+    .update(schema.HSISignUpCodes)
+    .set({
+      Email: email,
+    })
+    .where(
+      and(
+        eq(schema.HSISignUpCodes.Code, signUpCode),
+        eq(schema.HSISignUpCodes.Email, 'not an email')
+      )
     )
 
-    if (
-      addUserResults?.success &&
-      addUserResults.meta?.changed_db &&
-      addUserResults?.results[0]?.Id > 0
-    ) {
-      const personId = addUserResults.results[0].Id
+  if (takeCodeResults?.success && takeCodeResults.meta?.changed_db) {
+    let addUserResults = await getDb(context)
+      .insert(schema.HSIPeople)
+      .values({
+        Email: email,
+        IsVerified: false,
+        AddedTimestamp: new Date().toISOString(),
+      })
+      .returning({ Id: schema.HSIPeople.Id })
+
+    if (addUserResults != null && addUserResults[0].Id > 0) {
+      const personId = addUserResults[0].Id
       const { sessionId, signInCode, sessionCreateFailed } = await getSessionId(
         context,
         personId,
@@ -226,16 +264,23 @@ export const addNewUserWithEmailAndCode = async (
         signUpCode
       )
 
-      if (!sessionCreateFailed) {
+      if (sessionCreateFailed) {
+        res.errorCode = ADD_NEW_USER_GET_SESSION_FAILED
+      } else {
         res = {
           success: true,
           personId,
           sessionId,
           signInCode,
           signUpCode,
+          errorCode: ADD_NEW_USER_SUCCESS,
         }
       }
+    } else {
+      res.errorCode = ADD_NEW_USER_ADD_USER_FAILED
     }
+  } else {
+    res.errorCode = ADD_NEW_USER_TAKE_CODE_FAILED
   }
 
   return res

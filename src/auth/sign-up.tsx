@@ -7,15 +7,15 @@ import {
   EMAIL_SUBMITTED_COOKIE,
   ERROR_MESSAGE_COOKIE,
   PROTECTED_PATH,
-  SIGN_IN_PATH,
+  SIGN_UP_PATH,
 } from '../constants'
-import { buildSignInPage } from '../page-builders/build-sign-in-page'
 import { withSession } from './with-session'
+import { buildSignUpPage } from '../page-builders/build-sign-up-page'
 import { redirectWithNoMessage } from '../redirects'
 
-export const setupSignInPath = (app: HonoApp) => {
+export const setupSignUpPath = (app: HonoApp) => {
   app.get(
-    SIGN_IN_PATH,
+    SIGN_UP_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
@@ -26,7 +26,7 @@ export const setupSignInPath = (app: HonoApp) => {
           return redirectWithNoMessage(c, PROTECTED_PATH)
         }
 
-        return buildSignInPage(emailSubmitted, { error: errorMessage })(c)
+        return buildSignUpPage(emailSubmitted, { error: errorMessage })(c)
       })
     }
   )

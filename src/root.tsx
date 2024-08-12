@@ -1,8 +1,9 @@
 import { Hono } from 'hono'
 import { Fragment } from 'hono/jsx'
+import { bodyLimit } from 'hono/body-limit'
 
 import { Bindings } from './bindings'
-import { ROOT_PATH, SIGN_IN_PATH } from './constants'
+import { BODY_LIMIT_OPTIONS, ROOT_PATH, SIGN_IN_PATH } from './constants'
 import { HeaderElement, footer, header } from './partials/header'
 
 const signInPart: HeaderElement = (
@@ -14,7 +15,7 @@ const signInPart: HeaderElement = (
 )
 
 export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) => {
-  app.get(ROOT_PATH, (c) => {
+  app.get(ROOT_PATH, bodyLimit(BODY_LIMIT_OPTIONS), (c) => {
     return c.render(
       <Fragment>
         {header('startup-page-banner', signInPart)}

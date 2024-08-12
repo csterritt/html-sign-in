@@ -13,12 +13,15 @@ export type CookieOptions = {
 export const ROOT_PATH = '/'
 export const PROTECTED_PATH = '/protected'
 export const SIGN_IN_PATH = '/api/auth/sign-in'
-export const SUBMIT_EMAIL_PATH = '/api/auth/submit-email'
+export const SIGN_UP_PATH = '/api/auth/sign-up'
+export const SUBMIT_SIGN_IN_EMAIL_PATH = '/api/auth/submit-sign-in-email'
+export const SUBMIT_SIGN_UP_EMAIL_PATH = '/api/auth/submit-sign-up-email'
 export const AWAIT_CODE_PATH = '/api/auth/await-code'
 export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
 export const CANCEL_SIGN_IN_PATH = '/api/auth/cancel-sign-in'
 
 export const UNKNOWN_PERSON_ID = -1
+ export const SIGN_IN_TIMEOUT = 20 * 60 * 1000 
 
 export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
   path: '/',
@@ -31,3 +34,24 @@ export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
 export const ERROR_MESSAGE_COOKIE = 'error-message'
 export const SESSION_COOKIE = 'session-id'
+
+export const BODY_LIMIT_OPTIONS = {
+  maxSize: 4 * 1024, // 4kb
+  onError: (c: any) => {
+    console.log(`body too large, max size is 4kb`)
+    return c.text('overflow :(', 413)
+  },
+}
+
+export const ADD_NEW_USER_SUCCESS = 101
+export const ADD_NEW_USER_GET_SESSION_FAILED = 102
+export const ADD_NEW_USER_ADD_USER_FAILED = 103
+export const ADD_NEW_USER_TAKE_CODE_FAILED = 104
+export const ADD_NEW_USER_OTHER_PROBLEM = 105
+
+export const ADD_NEW_USER_MESSAGES: Map<number, string> = new Map()
+ADD_NEW_USER_MESSAGES.set(ADD_NEW_USER_SUCCESS, 'Add new user success')
+ADD_NEW_USER_MESSAGES.set(ADD_NEW_USER_GET_SESSION_FAILED, 'Get session failed')
+ADD_NEW_USER_MESSAGES.set(ADD_NEW_USER_ADD_USER_FAILED, 'Add user failed')
+ADD_NEW_USER_MESSAGES.set(ADD_NEW_USER_TAKE_CODE_FAILED, 'Take code failed')
+ADD_NEW_USER_MESSAGES.set(ADD_NEW_USER_OTHER_PROBLEM, 'Other problem')

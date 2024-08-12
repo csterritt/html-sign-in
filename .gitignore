@@ -17,3 +17,4 @@ public/static/style-XXXXXX.css
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+tmp/

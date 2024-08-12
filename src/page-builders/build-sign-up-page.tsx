@@ -3,29 +3,29 @@ import { addErrorIfAny } from './add-error-if-any'
 
 import {
   CANCEL_SIGN_IN_PATH,
-  SIGN_UP_PATH,
-  SUBMIT_SIGN_IN_EMAIL_PATH,
+  SIGN_IN_PATH,
+  SUBMIT_SIGN_UP_EMAIL_PATH,
 } from '../constants'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
 
-const renderSignInPage = (
+const renderSignUpPage = (
   c: LocalContext,
   emailSubmitted: string,
   options?: ForwardOptions
 ) =>
   c.render(
     <Fragment>
-      {header('sign-in-page-banner')}
+      {header('sign-up-page-banner')}
 
       <div class='flex-grow mx-6'>
         {addErrorIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>
-            <h3 class='card-title'>Sign In</h3>
+            <h3 class='card-title'>Register a new account</h3>
 
-            <form action={SUBMIT_SIGN_IN_EMAIL_PATH} method='POST'>
+            <form action={SUBMIT_SIGN_UP_EMAIL_PATH} method='POST'>
               <label class='label'>
                 <span class='label-text'>Email address:</span>
               </label>
@@ -35,27 +35,40 @@ const renderSignInPage = (
                 name='email'
                 type='email'
                 placeholder='email'
-                class='input input-bordered input-primary w-full max-w-xs'
-                autofocus={true}
+                class='input input-bordered input-primary w-full max-w-xs mb-4'
+                autoFocus={true}
                 value={emailSubmitted}
                 data-testid='email-input'
+              />
+
+              <label class='label'>
+                <span class='label-text'>Registration Code:</span>
+              </label>
+
+              <input
+                id='signup-code'
+                name='signupCode'
+                type='signup-code'
+                placeholder='Registration Code'
+                class='input input-bordered input-primary w-full max-w-xs'
+                data-testid='signup-code'
               />
 
               <div class='card-actions justify-between mt-4'>
                 <a
                   href={CANCEL_SIGN_IN_PATH}
                   class='btn btn-ghost'
-                  data-testid='cancel-sign-in-link'
+                  data-testid='cancel-sign-up-link'
                 >
-                  Cancel sign in
+                  Cancel registration
                 </a>
 
                 <a
-                  href={SIGN_UP_PATH}
+                  href={SIGN_IN_PATH}
                   class='btn btn-accent'
-                  data-testid='sign-up-link'
+                  data-testid='sign-in-link'
                 >
-                  Register a new account
+                  Sign in to an existing account
                 </a>
 
                 <input
@@ -73,7 +86,7 @@ const renderSignInPage = (
     </Fragment>
   )
 
-export const buildSignInPage =
+export const buildSignUpPage =
   (emailSubmitted: string, options?: ForwardOptions) => (c: LocalContext) => {
-    return renderSignInPage(c, emailSubmitted, options)
+    return renderSignUpPage(c, emailSubmitted, options)
   }
