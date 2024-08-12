@@ -16,7 +16,6 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import {
   findCompletePersonByEmail,
-  findPersonByEmail,
   rememberUserCreated,
   rememberUserSignedIn,
   removeOldUserSessionsFromDb,
@@ -182,9 +181,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             }
 
             if (!userResults.IsVerified) {
-              const content = JSON.parse(
-                (sessionInfo.Content ?? '{}') as string
-              )
+              const content = JSON.parse(sessionInfo.Content ?? '{}')
               const rememberSuccess = await rememberUserCreated(
                 c,
                 sessionId,
