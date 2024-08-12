@@ -18,5 +18,5 @@ test('submit an email but no signup code to registration', async ({ page }) => {
   await findItemByTestId(page, 'sign-up-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(page, `You must supply a sign-up code`)
+  await verifyAlert(page, `That sign-up code is invalid`)
 })

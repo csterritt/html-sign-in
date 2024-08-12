@@ -12,5 +12,5 @@ test('submit no email to registration', async ({ page }) => {
   await findItemByTestId(page, 'sign-up-page-banner')
 
   // Expect there to be an error message
-  await verifyAlert(page, `You must supply an email address`)
+  await verifyAlert(page, `Invalid email address:`)
 })

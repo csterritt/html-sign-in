@@ -22,7 +22,7 @@ type SubmitEmailBody = {
   email?: string
 }
 
-const LoginSchema = v.object({
+const SignInSchema = v.object({
   email: v.pipe(v.string(), v.email(), v.minLength(4), v.maxLength(254)),
 })
 
@@ -34,7 +34,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
       const body: SubmitEmailBody = await c.req.parseBody()
       let emailFound = ''
       try {
-        const { email } = v.parse(LoginSchema, { email: body.email })
+        const { email } = v.parse(SignInSchema, { email: body.email })
         emailFound = email
       } catch (error) {
         return redirectWithErrorMessage(

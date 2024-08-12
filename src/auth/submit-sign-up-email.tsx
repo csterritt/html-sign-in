@@ -1,5 +1,6 @@
 import { setCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
+import * as v from 'valibot'
 
 import {
   ADD_NEW_USER_MESSAGES,
@@ -25,70 +26,88 @@ type SubmitSignUpEmailBody = {
   signupCode?: string
 }
 
+const SignUpSchema = v.object({
+  email: v.pipe(v.string(), v.email(), v.minLength(5), v.maxLength(254)),
+  signupCode: v.pipe(v.string(), v.string(), v.minLength(8), v.maxLength(8)),
+})
+
 export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
   app.post(
     SUBMIT_SIGN_UP_EMAIL_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const body: SubmitSignUpEmailBody = await c.req.parseBody()
-      const email = body.email ?? ''
-      const signupCode = body.signupCode ?? ''
-      let personId: number = UNKNOWN_PERSON_ID
-      let emailFound: boolean = false
-
-      if (email.trim().length > 0) {
-        emailFound = true
-        setCookie(c, EMAIL_SUBMITTED_COOKIE, email, STANDARD_COOKIE_OPTIONS)
-        personId = await findPersonByEmail(c, email, false)
-        if (personId !== UNKNOWN_PERSON_ID) {
-          return redirectWithErrorMessage(
-            c,
-            `There is already an account for ${email}, please sign in instead`,
-            SIGN_UP_PATH
-          )
-        }
-      }
-
-      if (emailFound && signupCode.trim().length > 0) {
-        const signUpResults = await addNewUserWithEmailAndCode(
-          c,
-          email,
-          signupCode
-        )
-        if (!signUpResults.success) {
-          if (signUpResults.errorCode === ADD_NEW_USER_TAKE_CODE_FAILED) {
-            return redirectWithErrorMessage(
-              c,
-              `That sign-up code is invalid`,
-              SIGN_UP_PATH
-            )
+      const results = v.safeParse(SignUpSchema, {
+        email: body.email,
+        signupCode: body.signupCode,
+      })
+      if (
+        !results?.success ||
+        results?.output === undefined ||
+        results?.output?.email === undefined ||
+        results?.output?.signupCode === undefined
+      ) {
+        let errorFound = 'Unknown error'
+        for (
+          let index = 0;
+          index < (results?.issues?.length ?? 0);
+          index += 1
+        ) {
+          // @ts-ignore
+          const issue: any = results.issues[index]
+          if (issue?.path[0]?.key === 'email') {
+            errorFound = `Invalid email address: ${body.email}`
+            break
+          } else if (issue?.path[0]?.key === 'signupCode') {
+            errorFound = `That sign-up code is invalid`
           }
+        }
 
+        return redirectWithErrorMessage(c, errorFound, SIGN_UP_PATH)
+      }
+
+      const emailFound = results.output.email
+      const signupCodeFound = results.output.signupCode
+
+      setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
+      const personId = await findPersonByEmail(c, emailFound, false)
+      if (personId !== UNKNOWN_PERSON_ID) {
+        return redirectWithErrorMessage(
+          c,
+          `There is already an account for ${emailFound}, please sign in instead`,
+          SIGN_UP_PATH
+        )
+      }
+
+      const signUpResults = await addNewUserWithEmailAndCode(
+        c,
+        emailFound,
+        signupCodeFound
+      )
+      if (!signUpResults.success) {
+        if (signUpResults.errorCode === ADD_NEW_USER_TAKE_CODE_FAILED) {
           return redirectWithErrorMessage(
             c,
-            `Failed to add new user: ${ADD_NEW_USER_MESSAGES.get(signUpResults.errorCode)}`,
+            `That sign-up code is invalid`,
             SIGN_UP_PATH
           )
         }
 
-        setCookie(
+        return redirectWithErrorMessage(
           c,
-          SESSION_COOKIE,
-          signUpResults.sessionId,
-          STANDARD_COOKIE_OPTIONS
+          `Failed to add new user: ${ADD_NEW_USER_MESSAGES.get(signUpResults.errorCode)}`,
+          SIGN_UP_PATH
         )
-
-        return redirectWithNoMessage(c, AWAIT_CODE_PATH)
       }
 
-      let errorMessage = ''
-      if (!emailFound) {
-        errorMessage = 'You must supply an email address'
-      } else if (signupCode.trim().length === 0) {
-        errorMessage = 'You must supply a sign-up code'
-      }
+      setCookie(
+        c,
+        SESSION_COOKIE,
+        signUpResults.sessionId,
+        STANDARD_COOKIE_OPTIONS
+      )
 
-      return redirectWithErrorMessage(c, errorMessage, SIGN_UP_PATH)
+      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
     }
   )
 }

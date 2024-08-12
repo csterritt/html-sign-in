@@ -14,6 +14,7 @@ test('submit a sign up with the email address for an existing account', async ({
   await clickLink(page, 'sign-in-link')
   await clickLink(page, 'sign-up-link')
   await fillInput(page, 'email', 'fredfred@team439980.testinator.com')
+  await fillInput(page, 'code', 'fsdafdsa')
   await clickLink(page, 'submit')
 
   // Expect there to be the right banner
