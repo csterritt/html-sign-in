@@ -1,6 +1,7 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
 import dayjs from 'dayjs/esm'
+import * as v from 'valibot'
 
 import {
   AWAIT_CODE_PATH,
@@ -28,6 +29,14 @@ import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
 type SubmitCodeBody = {
   code?: string
 }
+
+const SubmitCodeSchema = v.object({
+  code: v.pipe(v.string(), v.trim(), v.length(6), v.regex(/^\d{6}$/)),
+})
+
+const SubmittedEmailSchema = v.object({
+  email: v.pipe(v.string(), v.email(), v.minLength(4), v.maxLength(254)),
+})
 
 enum ValidationResult {
   Success,
@@ -121,10 +130,25 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           const body: SubmitCodeBody = await c.req.parseBody()
-          const codeSubmitted = (body.code ?? '').trim()
-          const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
+          let codeSubmitted = ''
+          try {
+            const { code } = v.parse(SubmitCodeSchema, { code: body.code })
+            codeSubmitted = code.toString()
+          } catch (error) {
+            return redirectWithErrorMessage(
+              c,
+              "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
+              AWAIT_CODE_PATH
+            )
+          }
 
-          if (emailSubmitted.trim().length === 0) {
+          let emailSubmitted = ''
+          try {
+            const { email } = v.parse(SubmittedEmailSchema, {
+              email: getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? '',
+            })
+            emailSubmitted = email
+          } catch (error) {
             // TODO: handle email not found
             return redirectWithNoMessage(c, SIGN_IN_PATH)
           }
@@ -142,76 +166,65 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             )
           }
 
-          if (codeSubmitted.trim().length > 0) {
-            const isValid = await codeIsValid(
+          const isValid = await codeIsValid(
+            c,
+            emailSubmitted,
+            codeSubmitted,
+            sessionId,
+            sessionInfo
+          )
+          if (isValid === ValidationResult.InvalidCode) {
+            return redirectWithErrorMessage(
               c,
-              emailSubmitted,
-              codeSubmitted,
+              'That is the wrong code. Please try again.',
+              AWAIT_CODE_PATH
+            )
+          }
+
+          if (isValid === ValidationResult.InvalidSession) {
+            deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+            deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+            return redirectWithErrorMessage(
+              c,
+              'That code has expired, please sign in again',
+              SIGN_IN_PATH
+            )
+          }
+
+          const userResults = await findCompletePersonByEmail(c, emailSubmitted)
+          if (userResults == null) {
+            return redirectWithErrorMessage(
+              c,
+              'Internal error, please try again.',
+              SIGN_IN_PATH
+            )
+          }
+
+          if (!userResults.IsVerified) {
+            const content = JSON.parse(sessionInfo.Content ?? '{}')
+            const rememberSuccess = await rememberUserCreated(
+              c,
               sessionId,
-              sessionInfo
+              emailSubmitted,
+              content.signUpCode ?? ''
             )
-            if (isValid === ValidationResult.InvalidCode) {
-              return redirectWithErrorMessage(
-                c,
-                'That is the wrong code. Please try again.',
-                AWAIT_CODE_PATH
-              )
-            }
 
-            if (isValid === ValidationResult.InvalidSession) {
-              deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-              deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
-              return redirectWithErrorMessage(
-                c,
-                'That code has expired, please sign in again',
-                SIGN_IN_PATH
-              )
-            }
-
-            const userResults = await findCompletePersonByEmail(
-              c,
-              emailSubmitted
-            )
-            if (userResults == null) {
+            if (!rememberSuccess) {
               return redirectWithErrorMessage(
                 c,
                 'Internal error, please try again.',
                 SIGN_IN_PATH
               )
             }
-
-            if (!userResults.IsVerified) {
-              const content = JSON.parse(sessionInfo.Content ?? '{}')
-              const rememberSuccess = await rememberUserCreated(
-                c,
-                sessionId,
-                emailSubmitted,
-                content.signUpCode ?? ''
-              )
-
-              if (!rememberSuccess) {
-                return redirectWithErrorMessage(
-                  c,
-                  'Internal error, please try again.',
-                  SIGN_IN_PATH
-                )
-              }
-            } else {
-              const content = {
-                email: emailSubmitted,
-              }
-              await rememberUserSignedIn(c, content, sessionId)
+          } else {
+            const content = {
+              email: emailSubmitted,
             }
-
-            deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-            return redirectWithNoMessage(c, PROTECTED_PATH)
+            await rememberUserSignedIn(c, content, sessionId)
           }
 
-          return redirectWithErrorMessage(
-            c,
-            "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
-            AWAIT_CODE_PATH
-          )
+          deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+          return redirectWithNoMessage(c, PROTECTED_PATH)
         }
       )
     }
