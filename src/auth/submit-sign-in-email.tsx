@@ -1,6 +1,5 @@
 import { setCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
-import * as v from 'valibot'
 
 import {
   AWAIT_CODE_PATH,
@@ -15,16 +14,13 @@ import {
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
 import { getSessionId } from '../db/get-session-id'
-import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
+import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
+import { validEmail } from '../validators/validators'
  import { sendCodeEMail } from '../db/send-email' 
 
 type SubmitEmailBody = {
   email?: string
 }
-
-const SignInSchema = v.object({
-  email: v.pipe(v.string(), v.email(), v.minLength(4), v.maxLength(254)),
-})
 
 export const setupSubmitSignInEmailPath = (app: HonoApp) => {
   app.post(
@@ -32,17 +28,15 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const body: SubmitEmailBody = await c.req.parseBody()
-      let emailFound = ''
-      try {
-        const { email } = v.parse(SignInSchema, { email: body.email })
-        emailFound = email
-      } catch (error) {
+      const { email, success } = validEmail(body.email ?? '')
+      if (!success) {
         return redirectWithErrorMessage(
           c,
-          `Invalid email address: ${body.email}`,
+          `Invalid email address: ${email}`,
           SIGN_IN_PATH
         )
       }
+      const emailFound = email
 
       setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
       const personId = await findPersonByEmail(c, emailFound, true)
