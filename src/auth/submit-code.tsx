@@ -1,7 +1,6 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
 import dayjs from 'dayjs/esm'
-import * as v from 'valibot'
 
 import {
   AWAIT_CODE_PATH,
@@ -24,19 +23,12 @@ import {
   updateSessionContent,
 } from '../db/session-db-access'
 import { withSession } from './with-session'
-import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
+import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
+import { validCode, validEmail } from '../validators/validators'
 
 type SubmitCodeBody = {
   code?: string
 }
-
-const SubmitCodeSchema = v.object({
-  code: v.pipe(v.string(), v.trim(), v.length(6), v.regex(/^\d{6}$/)),
-})
-
-const SubmittedEmailSchema = v.object({
-  email: v.pipe(v.string(), v.email(), v.minLength(4), v.maxLength(254)),
-})
 
 enum ValidationResult {
   Success,
@@ -130,28 +122,24 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           const body: SubmitCodeBody = await c.req.parseBody()
-          let codeSubmitted = ''
-          try {
-            const { code } = v.parse(SubmitCodeSchema, { code: body.code })
-            codeSubmitted = code.toString()
-          } catch (error) {
+          const { code, success: codeSuccess } = validCode(body.code ?? '')
+          if (!codeSuccess) {
             return redirectWithErrorMessage(
               c,
               "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
               AWAIT_CODE_PATH
             )
           }
+          const codeSubmitted = code
 
-          let emailSubmitted = ''
-          try {
-            const { email } = v.parse(SubmittedEmailSchema, {
-              email: getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? '',
-            })
-            emailSubmitted = email
-          } catch (error) {
+          const { email, success: emailSuccess } = validEmail(
+            getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
+          )
+          if (!emailSuccess) {
             // TODO: handle email not found
             return redirectWithNoMessage(c, SIGN_IN_PATH)
           }
+          const emailSubmitted = email
 
           const timedOut = await sessionHasTimedOut(
             c,
