@@ -19,17 +19,13 @@ import {
   addNewUserWithEmailAndCode,
   findPersonByEmail,
 } from '../db/session-db-access'
-import { redirectWithNoMessage, redirectWithErrorMessage } from '../redirects'
+import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
+import { validSignUpParameters } from '../validators/validators'
 
 type SubmitSignUpEmailBody = {
   email?: string
-  signupCode?: string
+  signUpCode?: string
 }
-
-const SignUpSchema = v.object({
-  email: v.pipe(v.string(), v.email(), v.minLength(5), v.maxLength(254)),
-  signupCode: v.pipe(v.string(), v.string(), v.minLength(8), v.maxLength(8)),
-})
 
 export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
   app.post(
@@ -37,37 +33,17 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const body: SubmitSignUpEmailBody = await c.req.parseBody()
-      const results = v.safeParse(SignUpSchema, {
-        email: body.email,
-        signupCode: body.signupCode,
-      })
-      if (
-        !results?.success ||
-        results?.output === undefined ||
-        results?.output?.email === undefined ||
-        results?.output?.signupCode === undefined
-      ) {
-        let errorFound = 'Unknown error'
-        for (
-          let index = 0;
-          index < (results?.issues?.length ?? 0);
-          index += 1
-        ) {
-          // @ts-ignore
-          const issue: any = results.issues[index]
-          if (issue?.path[0]?.key === 'email') {
-            errorFound = `Invalid email address: ${body.email}`
-            break
-          } else if (issue?.path[0]?.key === 'signupCode') {
-            errorFound = `That sign-up code is invalid`
-          }
-        }
-
+      const { email, signUpCode, errorFound, success } = validSignUpParameters(
+        body.email ?? '',
+        body.signUpCode ?? ''
+      )
+      if (!success) {
+        console.log(`errorFound: ${errorFound}`)
         return redirectWithErrorMessage(c, errorFound, SIGN_UP_PATH)
       }
 
-      const emailFound = results.output.email
-      const signupCodeFound = results.output.signupCode
+      const emailFound = email
+      const signUpCodeFound = signUpCode
 
       setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
       const personId = await findPersonByEmail(c, emailFound, false)
@@ -82,7 +58,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
       const signUpResults = await addNewUserWithEmailAndCode(
         c,
         emailFound,
-        signupCodeFound
+        signUpCodeFound
       )
       if (!signUpResults.success) {
         if (signUpResults.errorCode === ADD_NEW_USER_TAKE_CODE_FAILED) {

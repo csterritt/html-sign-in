@@ -47,7 +47,7 @@ const renderSignUpPage = (
 
               <input
                 id='signup-code'
-                name='signupCode'
+                name='signUpCode'
                 type='signup-code'
                 placeholder='Registration Code'
                 class='input input-bordered input-primary w-full max-w-xs'
