@@ -21,13 +21,16 @@ export const setupSignInPath = (app: HonoApp) => {
       const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
       const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
 
-      return await withSession(c, async (sessionIsValid) => {
-        if (sessionIsValid) {
-          return redirectWithNoMessage(c, PROTECTED_PATH)
-        }
+      return await withSession(
+        c,
+        async (sessionIsValid, sessionId, sessionInfo) => {
+          if (sessionIsValid && sessionInfo?.SignedIn) {
+            return redirectWithNoMessage(c, PROTECTED_PATH)
+          }
 
-        return buildSignInPage(emailSubmitted, { error: errorMessage })(c)
-      })
+          return buildSignInPage(emailSubmitted, { error: errorMessage })(c)
+        }
+      )
     }
   )
 }
