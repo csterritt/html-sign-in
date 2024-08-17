@@ -18,6 +18,7 @@ export const SUBMIT_SIGN_IN_EMAIL_PATH = '/api/auth/submit-sign-in-email'
 export const SUBMIT_SIGN_UP_EMAIL_PATH = '/api/auth/submit-sign-up-email'
 export const AWAIT_CODE_PATH = '/api/auth/await-code'
 export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
+export const RESEND_CODE_PATH = '/api/auth/resend-code'
 export const CANCEL_SIGN_IN_PATH = '/api/auth/cancel-sign-in'
 
 export const UNKNOWN_PERSON_ID = -1
