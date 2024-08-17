@@ -25,6 +25,9 @@ export const UNKNOWN_PERSON_ID = -1
 export const SIGN_IN_TIMEOUT = 60 * 1000 // PRODUCTION:REMOVE
 // export const SIGN_IN_TIMEOUT = 20 * 60 * 1000 // PRODUCTION:UNCOMMENT
 
+export const RESEND_CODE_TIMEOUT = 2 * 1000 // PRODUCTION:REMOVE
+// export const RESEND_CODE_TIMEOUT = 30 * 1000 // PRODUCTION:UNCOMMENT
+
 export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
   path: '/',
   sameSite: 'Strict',
