@@ -36,7 +36,7 @@ const renderSignUpPage = (
                 type='email'
                 placeholder='email'
                 class='input input-bordered input-primary w-full max-w-xs mb-4'
-                autoFocus={true}
+                autofocus={true}
                 value={emailSubmitted}
                 data-testid='email-input'
               />
