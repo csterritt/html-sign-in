@@ -21,14 +21,9 @@ export const withSession = async (
   }
 
   const sessionInfo = await getSessionInfoForSessionId(c, sessionId)
-  if (
-    sessionInfo?.success === false ||
-    sessionInfo?.results === undefined ||
-    sessionInfo?.results?.Content === undefined ||
-    sessionInfo?.results?.Content?.trim()?.length === 0
-  ) {
+  if (sessionInfo.isNothing) {
     return next(false)
   }
 
-  return next(true, sessionId, sessionInfo.results)
+  return next(true, sessionId, sessionInfo.value)
 }

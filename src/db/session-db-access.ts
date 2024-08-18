@@ -29,11 +29,6 @@ export type SessionInformation = {
   Content?: string
 }
 
-export type SessionQueryResults<ResultsType> = {
-  success: boolean
-  results: ResultsType | undefined
-}
-
 export type SessionOnly = {
   Session: string
 }
@@ -56,14 +51,20 @@ const getDb = (context: LocalContext) => {
 export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
-): Promise<SessionQueryResults<SessionInformation>> => {
-  const results = await getDb(context).query.HSISession.findFirst({
+): Promise<Maybe<SessionInformation>> => {
+  const sessionQueryResults = await getDb(context).query.HSISession.findFirst({
     where: eq(schema.HSISession.Session, sessionId),
   })
 
-  return {
-    success: results != null,
-    results,
+  if (
+    sessionQueryResults === undefined ||
+    sessionQueryResults?.Content === undefined ||
+    typeof sessionQueryResults?.Content !== 'string' ||
+    sessionQueryResults?.Content?.trim()?.length === 0
+  ) {
+    return nothing<SessionInformation>()
+  } else {
+    return just(sessionQueryResults)
   }
 }
 
