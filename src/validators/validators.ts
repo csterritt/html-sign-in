@@ -47,7 +47,6 @@ export const validSignUpParameters = (
     email: emailSubmitted,
     signupCode: codeSubmitted,
   })
-  console.log(`results: ${JSON.stringify(results)}`)
 
   if (results?.success) {
     return {

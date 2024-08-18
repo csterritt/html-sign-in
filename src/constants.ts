@@ -18,10 +18,13 @@ export const SUBMIT_SIGN_IN_EMAIL_PATH = '/api/auth/submit-sign-in-email'
 export const SUBMIT_SIGN_UP_EMAIL_PATH = '/api/auth/submit-sign-up-email'
 export const AWAIT_CODE_PATH = '/api/auth/await-code'
 export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
+export const RESEND_CODE_PATH = '/api/auth/resend-code'
 export const CANCEL_SIGN_IN_PATH = '/api/auth/cancel-sign-in'
 
 export const UNKNOWN_PERSON_ID = -1
  export const SIGN_IN_TIMEOUT = 20 * 60 * 1000 
+
+ export const RESEND_CODE_TIMEOUT = 30 * 1000 
 
 export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
   path: '/',
@@ -33,6 +36,7 @@ export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
 
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
 export const ERROR_MESSAGE_COOKIE = 'error-message'
+export const NOTIFICATION_MESSAGE_COOKIE = 'notification-message'
 export const SESSION_COOKIE = 'session-id'
 
 export const BODY_LIMIT_OPTIONS = {

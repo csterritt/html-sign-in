@@ -1,0 +1,59 @@
+import { HonoApp, LocalContext } from '../bindings'
+import {
+  AWAIT_CODE_PATH,
+  BODY_LIMIT_OPTIONS,
+  RESEND_CODE_PATH,
+  RESEND_CODE_TIMEOUT,
+  SIGN_IN_PATH,
+} from '../constants'
+import { bodyLimit } from 'hono/body-limit'
+import { withSession } from './with-session'
+import {
+  redirectWithErrorMessage,
+  redirectWithNoMessage,
+  redirectWithNotificationMessage,
+} from '../redirects'
+ import { buildSignInCode } from '../db/build-sign-in-code' 
+import { updateSessionContent } from '../db/session-db-access'
+
+export const setupResendCodePath = (app: HonoApp) => {
+  app.post(
+    RESEND_CODE_PATH,
+    bodyLimit(BODY_LIMIT_OPTIONS),
+    async (c: LocalContext) => {
+      return await withSession(
+        c,
+        async (sessionIsValid, sessionId, sessionInfo) => {
+          if (!sessionIsValid || sessionInfo == null || sessionId == null) {
+            return redirectWithNoMessage(c, SIGN_IN_PATH)
+          }
+
+          const lastSend = new Date(sessionInfo.Timestamp)
+          const now = new Date()
+          if (now.getTime() - lastSend.getTime() < RESEND_CODE_TIMEOUT) {
+            return redirectWithErrorMessage(
+              c,
+              'Please wait at least 30 seconds for the email to be delivered. Also, check your spam folder for the code.',
+              AWAIT_CODE_PATH
+            )
+          }
+
+           const signInCode = buildSignInCode() 
+          const content = JSON.parse(sessionInfo.Content ?? '{}')
+          const results = await updateSessionContent(
+            c,
+            now,
+            { ...content, signInCode },
+            sessionId
+          )
+
+          return redirectWithNotificationMessage(
+            c,
+            'Code sent, please also check your spam folder for the code.',
+            AWAIT_CODE_PATH
+          )
+        }
+      )
+    }
+  )
+}

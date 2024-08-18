@@ -9,5 +9,6 @@ export type HonoApp = Hono<{ Bindings: Bindings }>
 export type LocalContext = Context<{ Bindings: Bindings }>
 
 export type ForwardOptions = {
+  message?: string
   error?: string
 }

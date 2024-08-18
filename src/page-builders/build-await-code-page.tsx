@@ -1,7 +1,11 @@
 import { Fragment } from 'hono/jsx'
 
-import { CANCEL_SIGN_IN_PATH, SUBMIT_CODE_PATH } from '../constants'
-import { addErrorIfAny } from './add-error-if-any'
+import {
+  CANCEL_SIGN_IN_PATH,
+  RESEND_CODE_PATH,
+  SUBMIT_CODE_PATH,
+} from '../constants'
+import { addNotificationsIfAny } from './add-notifications-if-any'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
 
@@ -15,7 +19,7 @@ const renderAwaitCodePage = (
       {header('await-code-page-banner')}
 
       <div class='flex-grow mx-6'>
-        {addErrorIfAny(options)}
+        {addNotificationsIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>
@@ -53,6 +57,28 @@ const renderAwaitCodePage = (
                   type='submit'
                   class='btn btn-primary'
                   data-testid='submit'
+                />
+              </div>
+            </form>
+
+            <hr class='divider divider-neutral' />
+
+            <form action={RESEND_CODE_PATH} method='POST'>
+              <h3 class='card-title'>Resend Code</h3>
+
+              <label class='label'>
+                <span class='label-text'>
+                  Click this button to re-send the code. Please wait a bit first
+                  for the code email.
+                </span>
+              </label>
+
+              <div class='card-actions justify-between mt-4'>
+                <input
+                  type='submit'
+                  class='btn btn-primary'
+                  data-testid='resend-code-button'
+                  value='Resend code'
                 />
               </div>
             </form>

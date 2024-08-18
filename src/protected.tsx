@@ -5,6 +5,7 @@ import { HonoApp, LocalContext } from './bindings'
 import {
   BODY_LIMIT_OPTIONS,
   ERROR_MESSAGE_COOKIE,
+  NOTIFICATION_MESSAGE_COOKIE,
   PROTECTED_PATH,
   SIGN_IN_PATH,
 } from './constants'
@@ -18,6 +19,9 @@ export const setupProtectedPath = (app: HonoApp) => {
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
+      const notificationMessage =
+        getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
+
       return await withSession(c, async (sessionIsValid) => {
         if (!sessionIsValid) {
           return redirectWithErrorMessage(
@@ -27,7 +31,10 @@ export const setupProtectedPath = (app: HonoApp) => {
           )
         }
 
-        return buildProtectedPage({ error: errorMessage })(c)
+        return buildProtectedPage({
+          error: errorMessage,
+          message: notificationMessage,
+        })(c)
       })
     }
   )

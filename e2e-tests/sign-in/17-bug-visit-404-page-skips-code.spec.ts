@@ -1,11 +1,6 @@
 import { test } from '@playwright/test'
 
-import {
-  clickLink,
-  fillInput,
-  findItemByTestId,
-  verifyContentByTestId,
-} from '../support/finders'
+import { clickLink, fillInput, findItemByTestId } from '../support/finders'
 
 test('found a case where sign in with email but not code, then go a page that does not exist then clicking home and sign in puts you on the protected page', async ({
   page,
