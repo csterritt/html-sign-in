@@ -8,8 +8,12 @@ import {
 } from '../constants'
 import { bodyLimit } from 'hono/body-limit'
 import { withSession } from './with-session'
-import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
-import { buildSignInCode } from '../db/build-sign-in-code'
+import {
+  redirectWithErrorMessage,
+  redirectWithNoMessage,
+  redirectWithNotificationMessage,
+} from '../redirects'
+// import { buildSignInCode } from '../db/build-sign-in-code' // PRODUCTION:UNCOMMENT
 import { updateSessionContent } from '../db/session-db-access'
 
 export const setupResendCodePath = (app: HonoApp) => {
@@ -44,7 +48,7 @@ export const setupResendCodePath = (app: HonoApp) => {
             sessionId
           )
 
-          return redirectWithErrorMessage(
+          return redirectWithNotificationMessage(
             c,
             'Code sent, please also check your spam folder for the code.',
             AWAIT_CODE_PATH

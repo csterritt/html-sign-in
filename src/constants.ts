@@ -38,6 +38,7 @@ export const STANDARD_COOKIE_OPTIONS: CookieOptions = {
 
 export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
 export const ERROR_MESSAGE_COOKIE = 'error-message'
+export const NOTIFICATION_MESSAGE_COOKIE = 'notification-message'
 export const SESSION_COOKIE = 'session-id'
 
 export const BODY_LIMIT_OPTIONS = {

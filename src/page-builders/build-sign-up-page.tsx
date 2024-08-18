@@ -1,5 +1,5 @@
 import { Fragment } from 'hono/jsx'
-import { addErrorIfAny } from './add-error-if-any'
+import { addNotificationsIfAny } from './add-notifications-if-any'
 
 import {
   CANCEL_SIGN_IN_PATH,
@@ -19,7 +19,7 @@ const renderSignUpPage = (
       {header('sign-up-page-banner')}
 
       <div class='flex-grow mx-6'>
-        {addErrorIfAny(options)}
+        {addNotificationsIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>

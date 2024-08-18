@@ -1,5 +1,5 @@
 import { Fragment } from 'hono/jsx'
-import { addErrorIfAny } from './add-error-if-any'
+import { addNotificationsIfAny } from './add-notifications-if-any'
 
 import { footer, header, HeaderElement } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
@@ -24,7 +24,7 @@ const renderProtectedPage = (c: LocalContext, options?: ForwardOptions) =>
       {header('protected-page-banner', signOutPart)}
 
       <div class='flex-grow mx-6'>
-        {addErrorIfAny(options)}
+        {addNotificationsIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>

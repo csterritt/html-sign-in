@@ -1,6 +1,11 @@
 import { test } from '@playwright/test'
 
-import { clickLink, fillInput, findItemByTestId } from '../support/finders'
+import {
+  clickLink,
+  fillInput,
+  findItemByTestId,
+  verifyAlert,
+} from '../support/finders'
 
 test('submit a known code', async ({ page }) => {
   await page.goto('http://localhost:3000/')
@@ -12,6 +17,9 @@ test('submit a known code', async ({ page }) => {
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'protected-page-banner')
+
+  // There is now a welcome message
+  await verifyAlert(page, `Sign in successful!`)
 
   // There is now a sign-out button
   await findItemByTestId(page, 'sign-out-link')

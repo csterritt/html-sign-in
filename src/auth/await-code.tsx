@@ -8,6 +8,7 @@ import {
   BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
   ERROR_MESSAGE_COOKIE,
+  NOTIFICATION_MESSAGE_COOKIE,
   SIGN_IN_PATH,
 } from '../constants'
 import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
@@ -29,7 +30,12 @@ export const setupAwaitCodePath = (app: HonoApp) => {
         }
 
         const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
-        return buildAwaitCodePage(emailSubmitted, { error: errorMessage })(c)
+        const notificationMessage =
+          getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
+        return buildAwaitCodePage(emailSubmitted, {
+          error: errorMessage,
+          message: notificationMessage,
+        })(c)
       })
     }
   )

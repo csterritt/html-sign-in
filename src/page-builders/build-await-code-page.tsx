@@ -5,7 +5,7 @@ import {
   RESEND_CODE_PATH,
   SUBMIT_CODE_PATH,
 } from '../constants'
-import { addErrorIfAny } from './add-error-if-any'
+import { addNotificationsIfAny } from './add-notifications-if-any'
 import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
 
@@ -19,7 +19,7 @@ const renderAwaitCodePage = (
       {header('await-code-page-banner')}
 
       <div class='flex-grow mx-6'>
-        {addErrorIfAny(options)}
+        {addNotificationsIfAny(options)}
 
         <div class='card bg-gray-100 dark:bg-gray-700 relative'>
           <div class='card-body'>

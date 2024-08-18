@@ -4,6 +4,7 @@ import {
   clickLink,
   fillInput,
   findItemByTestId,
+  verifyAlert,
   verifyContentByTestId,
 } from '../support/finders'
 import { getOneUseCode, removeTemporaryUser } from '../support/db-support'
@@ -39,6 +40,9 @@ test('submit a new email and a good signup code to registration', async ({
   await clickLink(page, 'submit')
 
   await findItemByTestId(page, 'protected-page-banner')
+
+  // There is now a welcome message
+  await verifyAlert(page, `Sign up successful! Welcome.`)
 
   await findItemByTestId(page, 'sign-out-link')
   await clickLink(page, 'sign-out-link')

@@ -23,7 +23,11 @@ import {
   updateSessionContent,
 } from '../db/session-db-access'
 import { withSession } from './with-session'
-import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
+import {
+  redirectWithErrorMessage,
+  redirectWithNoMessage,
+  redirectWithNotificationMessage,
+} from '../redirects'
 import { validCode, validEmail } from '../validators/validators'
 
 type SubmitCodeBody = {
@@ -188,6 +192,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
             )
           }
 
+          let message = `Sign in successful!`
           if (!userResults.IsVerified) {
             const content = JSON.parse(sessionInfo.Content ?? '{}')
             const rememberSuccess = await rememberUserCreated(
@@ -204,6 +209,8 @@ export const setupSubmitCodePath = (app: HonoApp) => {
                 SIGN_IN_PATH
               )
             }
+
+            message = `Sign up successful! Welcome.`
           } else {
             const content = {
               email: emailSubmitted,
@@ -212,7 +219,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-          return redirectWithNoMessage(c, PROTECTED_PATH)
+          return redirectWithNotificationMessage(c, message, PROTECTED_PATH)
         }
       )
     }

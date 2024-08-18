@@ -25,7 +25,6 @@ test('click the resend code button, sign in with new code', async ({
   await clickLink(page, 'resend-code-button')
 
   // Expect there to be an error message
-  // TODO: Make this a notification, not an error
   await verifyAlert(
     page,
     `Code sent, please also check your spam folder for the code.`
