@@ -21,7 +21,6 @@ export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
 export const RESEND_CODE_PATH = '/api/auth/resend-code'
 export const CANCEL_SIGN_IN_PATH = '/api/auth/cancel-sign-in'
 
-export const UNKNOWN_PERSON_ID = -1
 export const SIGN_IN_TIMEOUT = 60 * 1000 // PRODUCTION:REMOVE
 // export const SIGN_IN_TIMEOUT = 20 * 60 * 1000 // PRODUCTION:UNCOMMENT
 

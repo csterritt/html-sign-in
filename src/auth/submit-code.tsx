@@ -184,7 +184,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           const userResults = await findCompletePersonByEmail(c, emailSubmitted)
-          if (userResults == null) {
+          if (userResults.isNothing) {
             return redirectWithErrorMessage(
               c,
               'Internal error, please try again.',
@@ -193,7 +193,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
           }
 
           let message = `Sign in successful!`
-          if (!userResults.IsVerified) {
+          if (!userResults.value.IsVerified) {
             const content = JSON.parse(sessionInfo.Content ?? '{}')
             const rememberSuccess = await rememberUserCreated(
               c,

@@ -1,6 +1,5 @@
 import { setCookie } from 'hono/cookie'
 import { bodyLimit } from 'hono/body-limit'
-import * as v from 'valibot'
 
 import {
   ADD_NEW_USER_MESSAGES,
@@ -12,7 +11,6 @@ import {
   SIGN_UP_PATH,
   STANDARD_COOKIE_OPTIONS,
   SUBMIT_SIGN_UP_EMAIL_PATH,
-  UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import {
@@ -47,7 +45,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
 
       setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
       const personId = await findPersonByEmail(c, emailFound, false)
-      if (personId !== UNKNOWN_PERSON_ID) {
+      if (personId.isJust) {
         return redirectWithErrorMessage(
           c,
           `There is already an account for ${emailFound}, please sign in instead`,

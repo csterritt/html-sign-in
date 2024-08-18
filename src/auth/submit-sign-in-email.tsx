@@ -9,7 +9,6 @@ import {
   SIGN_IN_PATH,
   STANDARD_COOKIE_OPTIONS,
   SUBMIT_SIGN_IN_EMAIL_PATH,
-  UNKNOWN_PERSON_ID,
 } from '../constants'
 import { HonoApp, LocalContext } from '../bindings'
 import { findPersonByEmail } from '../db/session-db-access'
@@ -40,7 +39,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
 
       setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
       const personId = await findPersonByEmail(c, emailFound, true)
-      if (personId === UNKNOWN_PERSON_ID) {
+      if (personId.isNothing) {
         return redirectWithErrorMessage(
           c,
           `Invalid email address: ${emailFound}`,
@@ -48,7 +47,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
         )
       }
 
-      const sessionResults = await getSessionId(c, personId, emailFound)
+      const sessionResults = await getSessionId(c, personId.value, emailFound)
       if (sessionResults.sessionCreateFailed) {
         return redirectWithErrorMessage(
           c,

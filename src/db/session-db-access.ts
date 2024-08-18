@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
+import Maybe, { just, nothing } from 'true-myth/maybe'
 
 import { getSessionId } from './get-session-id'
 import {
@@ -7,7 +8,6 @@ import {
   ADD_NEW_USER_OTHER_PROBLEM,
   ADD_NEW_USER_SUCCESS,
   ADD_NEW_USER_TAKE_CODE_FAILED,
-  UNKNOWN_PERSON_ID,
 } from '../constants'
 import { LocalContext } from '../bindings'
 import { and, eq, lt, SQL } from 'drizzle-orm'
@@ -36,6 +36,15 @@ export type SessionQueryResults<ResultsType> = {
 
 export type SessionOnly = {
   Session: string
+}
+
+export type NewUserCreateResults = {
+  success: boolean
+  personId: number
+  sessionId: string
+  signInCode: string
+  signUpCode: string
+  errorCode: number
 }
 
 export type SessionDeleteList = SessionOnly[]
@@ -81,7 +90,7 @@ export const findPersonByEmail = async (
   context: LocalContext,
   email: string,
   mustBeVerified: boolean
-): Promise<number> => {
+): Promise<Maybe<number>> => {
   let config: { where: SQL<any> | undefined } = {
     where: eq(schema.HSIPeople.Email, email),
   }
@@ -94,24 +103,24 @@ export const findPersonByEmail = async (
   const result = await getDb(context).query.HSIPeople.findFirst(config)
 
   if (result != null && result.Id > 0) {
-    return result.Id
+    return just(result.Id)
   } else {
-    return UNKNOWN_PERSON_ID
+    return nothing<number>()
   }
 }
 
 export const findCompletePersonByEmail = async (
   context: LocalContext,
   email: string
-): Promise<UserInformation | null> => {
+): Promise<Maybe<UserInformation>> => {
   const result = await getDb(context).query.HSIPeople.findFirst({
     where: eq(schema.HSIPeople.Email, email),
   })
 
   if (result != null && result.Id > 0) {
-    return result
+    return just(result)
   } else {
-    return null
+    return nothing<UserInformation>()
   }
 }
 
@@ -224,8 +233,8 @@ export const addNewUserWithEmailAndCode = async (
   context: LocalContext,
   email: string,
   signUpCode: string
-) => {
-  let res = {
+): Promise<NewUserCreateResults> => {
+  let res: NewUserCreateResults = {
     success: false,
     personId: -1,
     sessionId: '',
