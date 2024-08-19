@@ -1,4 +1,5 @@
 import { getCookie } from 'hono/cookie'
+import Maybe, { nothing } from 'true-myth/maybe'
 
 import { LocalContext } from '../bindings'
 import { SESSION_COOKIE } from '../constants'
@@ -9,21 +10,13 @@ import {
 
 export const withSession = async (
   c: LocalContext,
-  next: (
-    sessionIsValid: boolean,
-    sessionId?: string,
-    sessionInfo?: SessionInformation
-  ) => Promise<Response>
+  next: (sessionInfo: Maybe<SessionInformation>) => Promise<Response>
 ) => {
   const sessionId = getCookie(c, SESSION_COOKIE) ?? ''
   if (sessionId.trim().length === 0) {
-    return next(false)
+    return next(nothing<SessionInformation>())
   }
 
   const sessionInfo = await getSessionInfoForSessionId(c, sessionId)
-  if (sessionInfo.isNothing) {
-    return next(false)
-  }
-
-  return next(true, sessionId, sessionInfo.value)
+  return next(sessionInfo)
 }

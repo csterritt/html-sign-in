@@ -31,6 +31,7 @@ export type SessionInformation = {
   Id: number
   PersonId: number
   Session: string
+  SessionId: string
   Timestamp: string
   SignedIn: boolean
   Content: ContentInformation
@@ -87,6 +88,7 @@ export const getSessionInfoForSessionId = async (
       Id: sessionQueryResults.Id,
       PersonId: sessionQueryResults.PersonId,
       Session: sessionQueryResults.Session,
+      SessionId: sessionId,
       Timestamp: sessionQueryResults.Timestamp,
       SignedIn: sessionQueryResults.SignedIn,
       Content: content.value,

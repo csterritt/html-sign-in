@@ -24,8 +24,8 @@ export const setupAwaitCodePath = (app: HonoApp) => {
         return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
-      return await withSession(c, async (sessionIsValid) => {
-        if (!sessionIsValid) {
+      return await withSession(c, async (sessionInfo) => {
+        if (sessionInfo.isNothing) {
           return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
         }
 

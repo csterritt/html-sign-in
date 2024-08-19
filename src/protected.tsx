@@ -22,8 +22,8 @@ export const setupProtectedPath = (app: HonoApp) => {
       const notificationMessage =
         getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
 
-      return await withSession(c, async (sessionIsValid) => {
-        if (!sessionIsValid) {
+      return await withSession(c, async (sessionInfo) => {
+        if (sessionInfo.isNothing) {
           return redirectWithErrorMessage(
             c,
             'You must sign in to visit that page',
