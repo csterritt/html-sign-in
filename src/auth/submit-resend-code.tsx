@@ -40,7 +40,8 @@ export const setupResendCodePath = (app: HonoApp) => {
 
           // const signInCode = buildSignInCode() // PRODUCTION:UNCOMMENT
           const signInCode = '654321' // PRODUCTION:REMOVE
-          const content = JSON.parse(sessionInfo.Content ?? '{}')
+          const content = sessionInfo.Content
+          // TODO: Check results
           const results = await updateSessionContent(
             c,
             now,

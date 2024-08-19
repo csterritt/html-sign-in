@@ -20,13 +20,20 @@ export type UserInformation = {
   AddedTimestamp: string
 }
 
+export type ContentInformation = {
+  email: string
+  signInCode?: string
+  signUpCode?: string
+  count?: number
+}
+
 export type SessionInformation = {
   Id: number
   PersonId: number
   Session: string
   Timestamp: string
   SignedIn: boolean
-  Content?: string
+  Content: ContentInformation
 }
 
 export type SessionOnly = {
@@ -64,7 +71,26 @@ export const getSessionInfoForSessionId = async (
   ) {
     return nothing<SessionInformation>()
   } else {
-    return just(sessionQueryResults)
+    let content
+    try {
+      content = just(JSON.parse(sessionQueryResults.Content))
+    } catch {
+      console.log(`Unable to parse content: ${sessionQueryResults.Content}`)
+      content = nothing<ContentInformation>()
+    }
+
+    if (content.isNothing) {
+      return nothing<SessionInformation>()
+    }
+
+    return just({
+      Id: sessionQueryResults.Id,
+      PersonId: sessionQueryResults.PersonId,
+      Session: sessionQueryResults.Session,
+      Timestamp: sessionQueryResults.Timestamp,
+      SignedIn: sessionQueryResults.SignedIn,
+      Content: content.value,
+    })
   }
 }
 

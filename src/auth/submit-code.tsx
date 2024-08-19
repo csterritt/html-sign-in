@@ -19,6 +19,7 @@ import {
   rememberUserCreated,
   rememberUserSignedIn,
   removeOldUserSessionsFromDb,
+  removeSessionFromDb,
   SessionInformation,
   updateSessionContent,
 } from '../db/session-db-access'
@@ -47,7 +48,7 @@ const codeIsValid = async (
   sessionId: string,
   sessionInfo: SessionInformation
 ): Promise<ValidationResult> => {
-  const content = JSON.parse(sessionInfo.Content as string)
+  const content = sessionInfo.Content
   if (content.email !== emailSubmitted) {
     return ValidationResult.InvalidSession
   }
@@ -71,7 +72,7 @@ const codeIsValid = async (
         return ValidationResult.InvalidSession
       }
     } else {
-      deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+      await removeSessionFromDb(c, sessionId)
       return ValidationResult.InvalidSession
     }
 
@@ -194,7 +195,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
 
           let message = `Sign in successful!`
           if (!userResults.value.IsVerified) {
-            const content = JSON.parse(sessionInfo.Content ?? '{}')
+            const content = sessionInfo.Content
             const rememberSuccess = await rememberUserCreated(
               c,
               sessionId,

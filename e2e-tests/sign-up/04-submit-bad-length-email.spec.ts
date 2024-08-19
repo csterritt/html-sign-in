@@ -23,6 +23,8 @@ test('submit a too-long email to registration', async ({ page }) => {
 
   // Expect there to be an error message
   await verifyAlert(page, `Invalid email address: ${tooLongEmail}`)
+
+  await clickLink(page, 'cancel-sign-up-link')
 })
 
 test('submit a too-short email to registration', async ({ page }) => {
@@ -38,4 +40,6 @@ test('submit a too-short email to registration', async ({ page }) => {
 
   // Expect there to be an error message
   await verifyAlert(page, `Invalid email address: x@y`)
+
+  await clickLink(page, 'cancel-sign-up-link')
 })

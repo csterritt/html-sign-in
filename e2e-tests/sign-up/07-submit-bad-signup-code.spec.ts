@@ -22,4 +22,6 @@ test('submit an email with a bad signup code to registration', async ({
 
   // Expect there to be an error message
   await verifyAlert(page, `That sign-up code is invalid`)
+
+  await clickLink(page, 'cancel-sign-up-link')
 })

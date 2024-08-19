@@ -13,4 +13,6 @@ test('submit no email to registration', async ({ page }) => {
 
   // Expect there to be an error message
   await verifyAlert(page, `Invalid email address:`)
+
+  await clickLink(page, 'cancel-sign-up-link')
 })

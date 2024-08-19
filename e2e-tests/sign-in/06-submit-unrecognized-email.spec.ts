@@ -22,4 +22,6 @@ test('submit unrecognized email', async ({ page }) => {
   await expect(page.getByTestId('email-input')).toHaveValue(
     'not.there@not.there'
   )
+
+  await clickLink(page, 'cancel-sign-in-link')
 })

@@ -6,6 +6,8 @@ import {
   BODY_LIMIT_OPTIONS,
   CANCEL_SIGN_IN_PATH,
   EMAIL_SUBMITTED_COOKIE,
+  ERROR_MESSAGE_COOKIE,
+  NOTIFICATION_MESSAGE_COOKIE,
   ROOT_PATH,
   SESSION_COOKIE,
   STANDARD_COOKIE_OPTIONS,
@@ -25,6 +27,8 @@ export const setupCancelSignInPath = (app: HonoApp) => {
       }
 
       deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+      deleteCookie(c, ERROR_MESSAGE_COOKIE)
+      deleteCookie(c, NOTIFICATION_MESSAGE_COOKIE)
       return redirectWithNoMessage(c, ROOT_PATH)
     }
   )

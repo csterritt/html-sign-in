@@ -17,6 +17,7 @@ export const redirectWithNotificationMessage = (
   message: string,
   path: string
 ) => {
+  deleteCookie(c, ERROR_MESSAGE_COOKIE)
   setCookie(c, NOTIFICATION_MESSAGE_COOKIE, message)
   return c.redirect(path, StatusCodes.SEE_OTHER)
 }

@@ -30,4 +30,6 @@ test('submit an empty magic code', async ({ page }) => {
     'please-enter-code-message',
     `Please enter the code sent to fredfred@team439980.testinator.com`
   )
+
+  await clickLink(page, 'cancel-sign-in-link')
 })

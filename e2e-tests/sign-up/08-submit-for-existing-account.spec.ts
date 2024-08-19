@@ -25,4 +25,6 @@ test('submit a sign up with the email address for an existing account', async ({
     page,
     `There is already an account for fredfred@team439980.testinator.com, please sign in instead`
   )
+
+  await clickLink(page, 'cancel-sign-up-link')
 })
