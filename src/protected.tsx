@@ -18,7 +18,7 @@ export const setupProtectedPath = (app: HonoApp) => {
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
       const sessionInfo = c.get('Session')
-      if (sessionInfo.isNothing) {
+      if (sessionInfo.isNothing || !sessionInfo.value.SignedIn) {
         return redirectWithErrorMessage(
           c,
           'You must sign in to visit that page',
