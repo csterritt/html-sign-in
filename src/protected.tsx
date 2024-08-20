@@ -7,25 +7,16 @@ import {
   ERROR_MESSAGE_COOKIE,
   NOTIFICATION_MESSAGE_COOKIE,
   PROTECTED_PATH,
-  SIGN_IN_PATH,
 } from './constants'
 import { buildProtectedPage } from './page-builders/build-protected-page'
-import { redirectWithErrorMessage } from './redirects'
+import { RequireSignIn } from './middleware/require-sign-in'
 
 export const setupProtectedPath = (app: HonoApp) => {
   app.get(
     PROTECTED_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
+    RequireSignIn,
     async (c: LocalContext) => {
-      const sessionInfo = c.get('Session')
-      if (sessionInfo.isNothing || !sessionInfo.value.SignedIn) {
-        return redirectWithErrorMessage(
-          c,
-          'You must sign in to visit that page',
-          SIGN_IN_PATH
-        )
-      }
-
       const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
       const notificationMessage =
         getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
