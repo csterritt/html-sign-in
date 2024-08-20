@@ -12,31 +12,29 @@ import {
   SIGN_IN_PATH,
 } from '../constants'
 import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
-import { withSession } from './with-session'
 
 export const setupAwaitCodePath = (app: HonoApp) => {
   app.get(
     AWAIT_CODE_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
+      const sessionInfo = c.get('Session')
+      if (sessionInfo.isNothing) {
+        return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
+      }
+
       const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
       if (emailSubmitted.trim().length === 0) {
         return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
       }
 
-      return await withSession(c, async (sessionInfo) => {
-        if (sessionInfo.isNothing) {
-          return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
-        }
-
-        const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
-        const notificationMessage =
-          getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
-        return buildAwaitCodePage(emailSubmitted, {
-          error: errorMessage,
-          message: notificationMessage,
-        })(c)
-      })
+      const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
+      const notificationMessage =
+        getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
+      return buildAwaitCodePage(emailSubmitted, {
+        error: errorMessage,
+        message: notificationMessage,
+      })(c)
     }
   )
 }

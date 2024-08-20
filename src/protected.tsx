@@ -10,7 +10,6 @@ import {
   SIGN_IN_PATH,
 } from './constants'
 import { buildProtectedPage } from './page-builders/build-protected-page'
-import { withSession } from './auth/with-session'
 import { redirectWithErrorMessage } from './redirects'
 
 export const setupProtectedPath = (app: HonoApp) => {
@@ -18,24 +17,22 @@ export const setupProtectedPath = (app: HonoApp) => {
     PROTECTED_PATH,
     bodyLimit(BODY_LIMIT_OPTIONS),
     async (c: LocalContext) => {
+      const sessionInfo = c.get('Session')
+      if (sessionInfo.isNothing) {
+        return redirectWithErrorMessage(
+          c,
+          'You must sign in to visit that page',
+          SIGN_IN_PATH
+        )
+      }
+
       const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
       const notificationMessage =
         getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
-
-      return await withSession(c, async (sessionInfo) => {
-        if (sessionInfo.isNothing) {
-          return redirectWithErrorMessage(
-            c,
-            'You must sign in to visit that page',
-            SIGN_IN_PATH
-          )
-        }
-
-        return buildProtectedPage({
-          error: errorMessage,
-          message: notificationMessage,
-        })(c)
-      })
+      return buildProtectedPage({
+        error: errorMessage,
+        message: notificationMessage,
+      })(c)
     }
   )
 }
