@@ -9,7 +9,7 @@ import { setupProtectedPath } from './protected'
 import { setupRootPath } from './root'
 import { setupSignInPaths } from './auth-paths'
 import { SessionInformation } from './db/session-db-access'
-import { GetSession } from './middleware/get-session'
+import { ProvideSession } from './middleware/provide-session'
 
 declare module 'hono' {
   interface ContextVariableMap {
@@ -22,7 +22,7 @@ const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
 })
 
 app.use(renderer)
-app.use(GetSession)
+app.use(ProvideSession)
 setupRootPath(app)
 setupProtectedPath(app)
 setupSignInPaths(app)
