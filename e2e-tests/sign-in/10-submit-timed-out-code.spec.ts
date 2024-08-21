@@ -20,4 +20,6 @@ test('submit magic code that has timed out', async ({ page }) => {
 
   // Expect there to be an error message
   await verifyAlert(page, 'That code has expired, please sign in again')
+
+  await clickLink(page, 'cancel-sign-in-link')
 })

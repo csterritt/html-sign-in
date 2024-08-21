@@ -37,4 +37,6 @@ test('submitting three wrong magic codes fails and you have to start over', asyn
 
   // Expect there to be an error message
   await verifyAlert(page, 'That code has expired, please sign in again')
+
+  await clickLink(page, 'cancel-sign-in-link')
 })

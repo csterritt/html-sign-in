@@ -14,7 +14,7 @@ test('submit a new email and a good signup code to registration', async ({
 }) => {
   let code = await getOneUseCode()
   code = (code ?? '').trim()
-  if (code === '') {
+  if (code === '' || code.length !== 8) {
     throw new Error('No code generated?')
   }
   const emailAddress = `newguy_${code}@team439980.testinator.com`

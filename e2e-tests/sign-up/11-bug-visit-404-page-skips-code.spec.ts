@@ -8,8 +8,8 @@ test('found a case where sign up with email and sign-up code, then go a page tha
 }) => {
   let code = await getOneUseCode()
   code = (code ?? '').trim()
-  if (code === '') {
-    throw new Error('No code generated?')
+  if (code === '' || code.length !== 8) {
+    throw new Error('No/bad code generated?')
   }
   const emailAddress = `newguy_${code}@team439980.testinator.com`
 
@@ -39,4 +39,6 @@ test('found a case where sign up with email and sign-up code, then go a page tha
   await findItemByTestId(page, 'sign-up-page-banner')
 
   await removeTemporaryUser(code, emailAddress)
+
+  await clickLink(page, 'cancel-sign-up-link')
 })

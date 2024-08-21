@@ -12,6 +12,7 @@
     "drizzle-orm": "^0.32.0",
     "hono": "^4.5.0",
     "http-status-codes": "^2.3.0",
+    "true-myth": "^8.0.0",
     "valibot": "^0.37.0"
   },
   "devDependencies": {

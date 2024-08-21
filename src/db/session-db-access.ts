@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
+import Maybe, { just, nothing } from 'true-myth/maybe'
 
 import { getSessionId } from './get-session-id'
 import {
@@ -7,7 +8,6 @@ import {
   ADD_NEW_USER_OTHER_PROBLEM,
   ADD_NEW_USER_SUCCESS,
   ADD_NEW_USER_TAKE_CODE_FAILED,
-  UNKNOWN_PERSON_ID,
 } from '../constants'
 import { LocalContext } from '../bindings'
 import { and, eq, lt, SQL } from 'drizzle-orm'
@@ -20,22 +20,34 @@ export type UserInformation = {
   AddedTimestamp: string
 }
 
+export type ContentInformation = {
+  email: string
+  signInCode?: string
+  signUpCode?: string
+  count?: number
+}
+
 export type SessionInformation = {
   Id: number
   PersonId: number
   Session: string
+  SessionId: string
   Timestamp: string
   SignedIn: boolean
-  Content?: string
-}
-
-export type SessionQueryResults<ResultsType> = {
-  success: boolean
-  results: ResultsType | undefined
+  Content: ContentInformation
 }
 
 export type SessionOnly = {
   Session: string
+}
+
+export type NewUserCreateResults = {
+  success: boolean
+  personId: number
+  sessionId: string
+  signInCode: string
+  signUpCode: string
+  errorCode: number
 }
 
 export type SessionDeleteList = SessionOnly[]
@@ -47,14 +59,40 @@ const getDb = (context: LocalContext) => {
 export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
-): Promise<SessionQueryResults<SessionInformation>> => {
-  const results = await getDb(context).query.HSISession.findFirst({
+): Promise<Maybe<SessionInformation>> => {
+  const sessionQueryResults = await getDb(context).query.HSISession.findFirst({
     where: eq(schema.HSISession.Session, sessionId),
   })
 
-  return {
-    success: results != null,
-    results,
+  if (
+    sessionQueryResults === undefined ||
+    sessionQueryResults?.Content === undefined ||
+    typeof sessionQueryResults?.Content !== 'string' ||
+    sessionQueryResults?.Content?.trim()?.length === 0
+  ) {
+    return nothing<SessionInformation>()
+  } else {
+    let content
+    try {
+      content = just(JSON.parse(sessionQueryResults.Content))
+    } catch {
+      console.log(`Unable to parse content: ${sessionQueryResults.Content}`)
+      content = nothing<ContentInformation>()
+    }
+
+    if (content.isNothing) {
+      return nothing<SessionInformation>()
+    }
+
+    return just({
+      Id: sessionQueryResults.Id,
+      PersonId: sessionQueryResults.PersonId,
+      Session: sessionQueryResults.Session,
+      SessionId: sessionId,
+      Timestamp: sessionQueryResults.Timestamp,
+      SignedIn: sessionQueryResults.SignedIn,
+      Content: content.value,
+    })
   }
 }
 
@@ -81,7 +119,7 @@ export const findPersonByEmail = async (
   context: LocalContext,
   email: string,
   mustBeVerified: boolean
-): Promise<number> => {
+): Promise<Maybe<number>> => {
   let config: { where: SQL<any> | undefined } = {
     where: eq(schema.HSIPeople.Email, email),
   }
@@ -94,24 +132,24 @@ export const findPersonByEmail = async (
   const result = await getDb(context).query.HSIPeople.findFirst(config)
 
   if (result != null && result.Id > 0) {
-    return result.Id
+    return just(result.Id)
   } else {
-    return UNKNOWN_PERSON_ID
+    return nothing<number>()
   }
 }
 
 export const findCompletePersonByEmail = async (
   context: LocalContext,
   email: string
-): Promise<UserInformation | null> => {
+): Promise<Maybe<UserInformation>> => {
   const result = await getDb(context).query.HSIPeople.findFirst({
     where: eq(schema.HSIPeople.Email, email),
   })
 
   if (result != null && result.Id > 0) {
-    return result
+    return just(result)
   } else {
-    return null
+    return nothing<UserInformation>()
   }
 }
 
@@ -223,8 +261,8 @@ export const addNewUserWithEmailAndCode = async (
   context: LocalContext,
   email: string,
   signUpCode: string
-) => {
-  let res = {
+): Promise<NewUserCreateResults> => {
+  let res: NewUserCreateResults = {
     success: false,
     personId: -1,
     sessionId: '',

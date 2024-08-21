@@ -1,10 +1,8 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
-import { bodyLimit } from 'hono/body-limit'
 import dayjs from 'dayjs/esm'
 
 import {
   AWAIT_CODE_PATH,
-  BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
   PROTECTED_PATH,
   SESSION_COOKIE,
@@ -19,10 +17,10 @@ import {
   rememberUserCreated,
   rememberUserSignedIn,
   removeOldUserSessionsFromDb,
+  removeSessionFromDb,
   SessionInformation,
   updateSessionContent,
 } from '../db/session-db-access'
-import { withSession } from './with-session'
 import {
   redirectWithErrorMessage,
   redirectWithNoMessage,
@@ -47,7 +45,7 @@ const codeIsValid = async (
   sessionId: string,
   sessionInfo: SessionInformation
 ): Promise<ValidationResult> => {
-  const content = JSON.parse(sessionInfo.Content as string)
+  const content = sessionInfo.Content
   if (content.email !== emailSubmitted) {
     return ValidationResult.InvalidSession
   }
@@ -71,7 +69,7 @@ const codeIsValid = async (
         return ValidationResult.InvalidSession
       }
     } else {
-      deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+      await removeSessionFromDb(c, sessionId)
       return ValidationResult.InvalidSession
     }
 
@@ -110,114 +108,107 @@ const sessionHasTimedOut = async (
 }
 
 export const setupSubmitCodePath = (app: HonoApp) => {
-  app.post(
-    SUBMIT_CODE_PATH,
-    bodyLimit(BODY_LIMIT_OPTIONS),
-    async (c: LocalContext) => {
-      return await withSession(
+  app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
+    const sessionInfo = c.get('Session')
+    if (sessionInfo.isNothing || sessionInfo.value.SessionId == null) {
+      return redirectWithNoMessage(c, SIGN_IN_PATH)
+    }
+
+    const body: SubmitCodeBody = await c.req.parseBody()
+    const { code, success: codeSuccess } = validCode(body.code ?? '')
+    if (!codeSuccess) {
+      return redirectWithErrorMessage(
         c,
-        async (sessionIsValid, sessionId, sessionInfo) => {
-          if (!sessionIsValid || sessionInfo == null || sessionId == null) {
-            return redirectWithNoMessage(c, SIGN_IN_PATH)
-          }
-
-          const body: SubmitCodeBody = await c.req.parseBody()
-          const { code, success: codeSuccess } = validCode(body.code ?? '')
-          if (!codeSuccess) {
-            return redirectWithErrorMessage(
-              c,
-              "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
-              AWAIT_CODE_PATH
-            )
-          }
-          const codeSubmitted = code
-
-          const { email, success: emailSuccess } = validEmail(
-            getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
-          )
-          if (!emailSuccess) {
-            // TODO: handle email not found
-            return redirectWithNoMessage(c, SIGN_IN_PATH)
-          }
-          const emailSubmitted = email
-
-          const timedOut = await sessionHasTimedOut(
-            c,
-            codeSubmitted,
-            sessionInfo
-          )
-          if (timedOut) {
-            return redirectWithErrorMessage(
-              c,
-              'That code has expired, please sign in again',
-              SIGN_IN_PATH
-            )
-          }
-
-          const isValid = await codeIsValid(
-            c,
-            emailSubmitted,
-            codeSubmitted,
-            sessionId,
-            sessionInfo
-          )
-          if (isValid === ValidationResult.InvalidCode) {
-            return redirectWithErrorMessage(
-              c,
-              'That is the wrong code. Please try again.',
-              AWAIT_CODE_PATH
-            )
-          }
-
-          if (isValid === ValidationResult.InvalidSession) {
-            deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-            deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
-            return redirectWithErrorMessage(
-              c,
-              'That code has expired, please sign in again',
-              SIGN_IN_PATH
-            )
-          }
-
-          const userResults = await findCompletePersonByEmail(c, emailSubmitted)
-          if (userResults == null) {
-            return redirectWithErrorMessage(
-              c,
-              'Internal error, please try again.',
-              SIGN_IN_PATH
-            )
-          }
-
-          let message = `Sign in successful!`
-          if (!userResults.IsVerified) {
-            const content = JSON.parse(sessionInfo.Content ?? '{}')
-            const rememberSuccess = await rememberUserCreated(
-              c,
-              sessionId,
-              emailSubmitted,
-              content.signUpCode ?? ''
-            )
-
-            if (!rememberSuccess) {
-              return redirectWithErrorMessage(
-                c,
-                'Internal error, please try again.',
-                SIGN_IN_PATH
-              )
-            }
-
-            message = `Sign up successful! Welcome.`
-          } else {
-            const content = {
-              email: emailSubmitted,
-            }
-            await rememberUserSignedIn(c, content, sessionId)
-          }
-
-          deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
-          return redirectWithNotificationMessage(c, message, PROTECTED_PATH)
-        }
+        "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
+        AWAIT_CODE_PATH
       )
     }
-  )
+    const codeSubmitted = code
+
+    const { email, success: emailSuccess } = validEmail(
+      getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
+    )
+    if (!emailSuccess) {
+      // TODO: handle email not found
+      return redirectWithNoMessage(c, SIGN_IN_PATH)
+    }
+    const emailSubmitted = email
+
+    const timedOut = await sessionHasTimedOut(
+      c,
+      codeSubmitted,
+      sessionInfo.value
+    )
+    if (timedOut) {
+      deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+      return redirectWithErrorMessage(
+        c,
+        'That code has expired, please sign in again',
+        SIGN_IN_PATH
+      )
+    }
+
+    const isValid = await codeIsValid(
+      c,
+      emailSubmitted,
+      codeSubmitted,
+      sessionInfo.value.SessionId,
+      sessionInfo.value
+    )
+    if (isValid === ValidationResult.InvalidCode) {
+      return redirectWithErrorMessage(
+        c,
+        'That is the wrong code. Please try again.',
+        AWAIT_CODE_PATH
+      )
+    }
+
+    if (isValid === ValidationResult.InvalidSession) {
+      deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+      deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
+      return redirectWithErrorMessage(
+        c,
+        'That code has expired, please sign in again',
+        SIGN_IN_PATH
+      )
+    }
+
+    const userResults = await findCompletePersonByEmail(c, emailSubmitted)
+    if (userResults.isNothing) {
+      return redirectWithErrorMessage(
+        c,
+        'Internal error, please try again.',
+        SIGN_IN_PATH
+      )
+    }
+
+    let message = `Sign in successful!`
+    if (!userResults.value.IsVerified) {
+      const content = sessionInfo.value.Content
+      const rememberSuccess = await rememberUserCreated(
+        c,
+        sessionInfo.value.SessionId,
+        emailSubmitted,
+        content.signUpCode ?? ''
+      )
+
+      if (!rememberSuccess) {
+        return redirectWithErrorMessage(
+          c,
+          'Internal error, please try again.',
+          SIGN_IN_PATH
+        )
+      }
+
+      message = `Sign up successful! Welcome.`
+    } else {
+      const content = {
+        email: emailSubmitted,
+      }
+      await rememberUserSignedIn(c, content, sessionInfo.value.SessionId)
+    }
+
+    deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
+    return redirectWithNotificationMessage(c, message, PROTECTED_PATH)
+  })
 }

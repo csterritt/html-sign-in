@@ -22,4 +22,6 @@ test('found a case where sign in with email but not code, then go a page that do
 
   // Expect there to be the right banner
   await findItemByTestId(page, 'sign-in-page-banner')
+
+  await clickLink(page, 'cancel-sign-in-link')
 })

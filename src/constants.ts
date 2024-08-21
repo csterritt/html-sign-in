@@ -21,7 +21,6 @@ export const SUBMIT_CODE_PATH = '/api/auth/submit-code'
 export const RESEND_CODE_PATH = '/api/auth/resend-code'
 export const CANCEL_SIGN_IN_PATH = '/api/auth/cancel-sign-in'
 
-export const UNKNOWN_PERSON_ID = -1
  export const SIGN_IN_TIMEOUT = 20 * 60 * 1000 
 
  export const RESEND_CODE_TIMEOUT = 30 * 1000 
@@ -38,14 +37,6 @@ export const EMAIL_SUBMITTED_COOKIE = 'email-submitted'
 export const ERROR_MESSAGE_COOKIE = 'error-message'
 export const NOTIFICATION_MESSAGE_COOKIE = 'notification-message'
 export const SESSION_COOKIE = 'session-id'
-
-export const BODY_LIMIT_OPTIONS = {
-  maxSize: 4 * 1024, // 4kb
-  onError: (c: any) => {
-    console.log(`body too large, max size is 4kb`)
-    return c.text('overflow :(', 413)
-  },
-}
 
 export const ADD_NEW_USER_SUCCESS = 101
 export const ADD_NEW_USER_GET_SESSION_FAILED = 102
