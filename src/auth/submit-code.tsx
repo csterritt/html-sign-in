@@ -119,24 +119,22 @@ export const setupSubmitCodePath = (app: HonoApp) => {
     }
 
     const body: SubmitCodeBody = await c.req.parseBody()
-    const { code, success: codeSuccess } = validCode(body.code ?? '')
-    if (!codeSuccess) {
+    const code = validCode(body.code ?? '')
+    if (code.isNothing) {
       return redirectWithErrorMessage(
         c,
         "You must supply the code sent to your email address. Check your spam filter, and after a few minutes, if it hasn't arrived, click the 'Resend' button below to try again.",
         AWAIT_CODE_PATH
       )
     }
-    const codeSubmitted = code
+    const codeSubmitted = code.value
 
-    const { email, success: emailSuccess } = validEmail(
-      getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
-    )
-    if (!emailSuccess) {
+    const email = validEmail(getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? '')
+    if (email.isNothing) {
       // TODO: handle email not found
       return redirectWithNoMessage(c, SIGN_IN_PATH)
     }
-    const emailSubmitted = email
+    const emailSubmitted = email.value
 
     const timedOut = await sessionHasTimedOut(
       c,

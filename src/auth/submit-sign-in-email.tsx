@@ -22,16 +22,16 @@ type SubmitEmailBody = {
 export const setupSubmitSignInEmailPath = (app: HonoApp) => {
   app.post(SUBMIT_SIGN_IN_EMAIL_PATH, async (c: LocalContext) => {
     const body: SubmitEmailBody = await c.req.parseBody()
-    const { email, success } = validEmail(body.email ?? '')
-    if (!success) {
+    const email = validEmail(body.email ?? '')
+    if (email.isNothing) {
       return redirectWithErrorMessage(
         c,
-        `Invalid email address: ${email}`,
+        `Invalid email address: ${body.email ?? ''}`,
         SIGN_IN_PATH
       )
     }
-    const emailFound = email
 
+    const emailFound = email.value
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, true)
     if (personId.isNothing) {

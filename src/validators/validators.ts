@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import Maybe, { just, nothing } from 'true-myth/maybe'
 
 const emailPipe = v.pipe(
   v.string(),
@@ -13,7 +14,7 @@ const SignInSchema = v.object({
 })
 
 const SubmitCodeSchema = v.object({
-  code: v.pipe(v.string(), v.trim(), v.length(6), v.regex(/^\d{6}$/)),
+  code: v.pipe(v.string(), v.minLength(1)),
 })
 
 const SignUpSchema = v.object({
@@ -21,21 +22,29 @@ const SignUpSchema = v.object({
   signupCode: v.pipe(v.string(), v.trim(), v.length(8), v.regex(/^\S{8}$/)),
 })
 
-export const validEmail = (emailSubmitted: string) => {
+export const validEmail = (emailSubmitted: string): Maybe<string> => {
   try {
     const { email } = v.parse(SignInSchema, { email: emailSubmitted })
-    return { email, success: true }
+    if (email.trim().length > 0) {
+      return just(email)
+    }
+
+    return nothing<string>()
   } catch (error) {
-    return { email: emailSubmitted, success: false }
+    return nothing<string>()
   }
 }
 
-export const validCode = (codeSubmitted: string) => {
+export const validCode = (codeSubmitted: string): Maybe<string> => {
   try {
     const { code } = v.parse(SubmitCodeSchema, { code: codeSubmitted })
-    return { code, success: true }
+    if (code.trim().length > 0) {
+      return just(code)
+    }
+
+    return nothing<string>()
   } catch (error) {
-    return { code: codeSubmitted, success: false }
+    return nothing<string>()
   }
 }
 
