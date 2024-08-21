@@ -149,6 +149,7 @@ export const setupSubmitCodePath = (app: HonoApp) => {
         sessionInfo.value
       )
       if (timedOut) {
+        deleteCookie(c, SESSION_COOKIE, STANDARD_COOKIE_OPTIONS)
         return redirectWithErrorMessage(
           c,
           'That code has expired, please sign in again',
