@@ -1,5 +1,11 @@
 import * as v from 'valibot'
 import Maybe, { just, nothing } from 'true-myth/maybe'
+import Result, { err, ok } from 'true-myth/result'
+
+export type SignUpParameters = {
+  email: string
+  signUpCode: string
+}
 
 const emailPipe = v.pipe(
   v.string(),
@@ -51,19 +57,17 @@ export const validCode = (codeSubmitted: string): Maybe<string> => {
 export const validSignUpParameters = (
   emailSubmitted: string,
   codeSubmitted: string
-) => {
+): Result<SignUpParameters, string> => {
   const results = v.safeParse(SignUpSchema, {
     email: emailSubmitted,
     signupCode: codeSubmitted,
   })
 
   if (results?.success) {
-    return {
+    return ok({
       email: results.output.email,
       signUpCode: results.output.signupCode,
-      errorFound: '',
-      success: true,
-    }
+    })
   }
 
   let errorFound = 'Unknown error'
@@ -77,10 +81,5 @@ export const validSignUpParameters = (
     }
   }
 
-  return {
-    email: emailSubmitted,
-    signUpCode: codeSubmitted,
-    errorFound,
-    success: false,
-  }
+  return err(errorFound)
 }

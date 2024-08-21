@@ -26,17 +26,17 @@ type SubmitSignUpEmailBody = {
 export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
   app.post(SUBMIT_SIGN_UP_EMAIL_PATH, async (c: LocalContext) => {
     const body: SubmitSignUpEmailBody = await c.req.parseBody()
-    const { email, signUpCode, errorFound, success } = validSignUpParameters(
+    const results = validSignUpParameters(
       body.email ?? '',
       body.signUpCode ?? ''
     )
-    if (!success) {
-      console.log(`errorFound: ${errorFound}`)
-      return redirectWithErrorMessage(c, errorFound, SIGN_UP_PATH)
+    if (results.isErr) {
+      console.log(`errorFound: ${results.error}`)
+      return redirectWithErrorMessage(c, results.error, SIGN_UP_PATH)
     }
 
-    const emailFound = email
-    const signUpCodeFound = signUpCode
+    const emailFound = results.value.email
+    const signUpCodeFound = results.value.signUpCode
 
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, false)
