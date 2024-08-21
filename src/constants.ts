@@ -40,14 +40,6 @@ export const ERROR_MESSAGE_COOKIE = 'error-message'
 export const NOTIFICATION_MESSAGE_COOKIE = 'notification-message'
 export const SESSION_COOKIE = 'session-id'
 
-export const BODY_LIMIT_OPTIONS = {
-  maxSize: 4 * 1024, // 4kb
-  onError: (c: any) => {
-    console.log(`body too large, max size is 4kb`)
-    return c.text('overflow :(', 413)
-  },
-}
-
 export const ADD_NEW_USER_SUCCESS = 101
 export const ADD_NEW_USER_GET_SESSION_FAILED = 102
 export const ADD_NEW_USER_ADD_USER_FAILED = 103

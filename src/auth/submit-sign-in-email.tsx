@@ -1,9 +1,7 @@
 import { setCookie } from 'hono/cookie'
-import { bodyLimit } from 'hono/body-limit'
 
 import {
   AWAIT_CODE_PATH,
-  BODY_LIMIT_OPTIONS,
   EMAIL_SUBMITTED_COOKIE,
   SESSION_COOKIE,
   SIGN_IN_PATH,
@@ -22,51 +20,47 @@ type SubmitEmailBody = {
 }
 
 export const setupSubmitSignInEmailPath = (app: HonoApp) => {
-  app.post(
-    SUBMIT_SIGN_IN_EMAIL_PATH,
-    bodyLimit(BODY_LIMIT_OPTIONS),
-    async (c: LocalContext) => {
-      const body: SubmitEmailBody = await c.req.parseBody()
-      const { email, success } = validEmail(body.email ?? '')
-      if (!success) {
-        return redirectWithErrorMessage(
-          c,
-          `Invalid email address: ${email}`,
-          SIGN_IN_PATH
-        )
-      }
-      const emailFound = email
-
-      setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
-      const personId = await findPersonByEmail(c, emailFound, true)
-      if (personId.isNothing) {
-        return redirectWithErrorMessage(
-          c,
-          `Invalid email address: ${emailFound}`,
-          SIGN_IN_PATH
-        )
-      }
-
-      const sessionResults = await getSessionId(c, personId.value, emailFound)
-      if (sessionResults.sessionCreateFailed) {
-        return redirectWithErrorMessage(
-          c,
-          'Failed to create session',
-          SIGN_IN_PATH
-        )
-      }
-
-      setCookie(
+  app.post(SUBMIT_SIGN_IN_EMAIL_PATH, async (c: LocalContext) => {
+    const body: SubmitEmailBody = await c.req.parseBody()
+    const { email, success } = validEmail(body.email ?? '')
+    if (!success) {
+      return redirectWithErrorMessage(
         c,
-        SESSION_COOKIE,
-        sessionResults.sessionId,
-        STANDARD_COOKIE_OPTIONS
+        `Invalid email address: ${email}`,
+        SIGN_IN_PATH
       )
-
-      console.log(`signUpCode is ${sessionResults.signInCode}`) // PRODUCTION:REMOVE
-      // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
-
-      return redirectWithNoMessage(c, AWAIT_CODE_PATH)
     }
-  )
+    const emailFound = email
+
+    setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
+    const personId = await findPersonByEmail(c, emailFound, true)
+    if (personId.isNothing) {
+      return redirectWithErrorMessage(
+        c,
+        `Invalid email address: ${emailFound}`,
+        SIGN_IN_PATH
+      )
+    }
+
+    const sessionResults = await getSessionId(c, personId.value, emailFound)
+    if (sessionResults.sessionCreateFailed) {
+      return redirectWithErrorMessage(
+        c,
+        'Failed to create session',
+        SIGN_IN_PATH
+      )
+    }
+
+    setCookie(
+      c,
+      SESSION_COOKIE,
+      sessionResults.sessionId,
+      STANDARD_COOKIE_OPTIONS
+    )
+
+    console.log(`signUpCode is ${sessionResults.signInCode}`) // PRODUCTION:REMOVE
+    // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
+
+    return redirectWithNoMessage(c, AWAIT_CODE_PATH)
+  })
 }

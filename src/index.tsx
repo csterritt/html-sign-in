@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
 import { LinearRouter } from 'hono/router/linear-router'
+import { bodyLimit } from 'hono/body-limit'
+import { StatusCodes } from 'http-status-codes'
 import Maybe from 'true-myth/maybe'
 
 import { Bindings } from './bindings'
@@ -22,6 +24,15 @@ const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
 })
 
 app.use(renderer)
+app.use(
+  bodyLimit({
+    maxSize: 4 * 1024, // 4kb
+    onError: (c: any) => {
+      console.log(`body too large, max size is 4kb`)
+      return c.text('overflow', StatusCodes.REQUEST_TOO_LONG)
+    },
+  })
+)
 app.use(ProvideSession)
 setupRootPath(app)
 setupProtectedPath(app)
