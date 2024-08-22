@@ -26,14 +26,16 @@ import {
   redirectWithNoMessage,
   redirectWithNotificationMessage,
 } from '../redirects'
-import {
-  ValidationResult,
-  validCode,
-  validEmail,
-} from '../validators/validators'
+import { validCode, validEmail } from '../validators/validators'
 
 type SubmitCodeBody = {
   code?: string
+}
+
+export enum ValidationResult {
+  Success,
+  InvalidCode,
+  InvalidSession,
 }
 
 const codeIsValid = async (
@@ -109,7 +111,7 @@ const sessionHasTimedOut = async (
   return found
 }
 
-export const setupSubmitCodePath = (app: HonoApp) => {
+export const setupSubmitCodePath = (app: HonoApp) =>
   app.post(SUBMIT_CODE_PATH, async (c: LocalContext) => {
     const sessionInfo = c.get('Session')
     if (sessionInfo.isNothing || sessionInfo.value.SessionId == null) {
@@ -211,4 +213,3 @@ export const setupSubmitCodePath = (app: HonoApp) => {
     deleteCookie(c, EMAIL_SUBMITTED_COOKIE, STANDARD_COOKIE_OPTIONS)
     return redirectWithNotificationMessage(c, message, PROTECTED_PATH)
   })
-}

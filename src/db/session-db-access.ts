@@ -1,5 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1' // UNREVIEWED
+import { and, eq, lt, SQL } from 'drizzle-orm'
 import Maybe, { just, nothing } from 'true-myth/maybe'
+import Result, { err, ok } from 'true-myth/result'
 
 import { getSessionId } from './get-session-id'
 import {
@@ -10,7 +12,6 @@ import {
   ADD_NEW_USER_TAKE_CODE_FAILED,
 } from '../constants'
 import { LocalContext } from '../bindings'
-import { and, eq, lt, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
 
 export type UserInformation = {
@@ -159,16 +160,31 @@ export const createNewSession = async (
   sessionId: string,
   date: Date,
   sessionContent: object
-) => {
-  return getDb(context)
-    .insert(schema.HSISession)
-    .values({
-      PersonId: personId,
-      Session: sessionId,
-      SignedIn: false,
-      Timestamp: date.toISOString(),
-      Content: JSON.stringify(sessionContent),
-    })
+): Promise<Result<string, string>> => {
+  let result: Result<string, string>
+  try {
+    const dbResults = await getDb(context)
+      .insert(schema.HSISession)
+      .values({
+        PersonId: personId,
+        Session: sessionId,
+        SignedIn: false,
+        Timestamp: date.toISOString(),
+        Content: JSON.stringify(sessionContent),
+      })
+
+    if (dbResults.success && dbResults.meta.changed_db) {
+      result = ok('success')
+    } else {
+      console.log('unable to insert new session')
+      result = err('unable to insert new session')
+    }
+  } catch (error: any) {
+    console.log(`createNewSession caught db error ${error}`)
+    result = err(error.toString())
+  }
+
+  return result
 }
 
 export const removeSessionFromDb = async (
@@ -296,21 +312,21 @@ export const addNewUserWithEmailAndCode = async (
 
     if (addUserResults != null && addUserResults[0].Id > 0) {
       const personId = addUserResults[0].Id
-      const { sessionId, signInCode, sessionCreateFailed } = await getSessionId(
+      const sessionIdResults = await getSessionId(
         context,
         personId,
         email,
         signUpCode
       )
 
-      if (sessionCreateFailed) {
+      if (sessionIdResults.isNothing) {
         res.errorCode = ADD_NEW_USER_GET_SESSION_FAILED
       } else {
         res = {
           success: true,
           personId,
-          sessionId,
-          signInCode,
+          sessionId: sessionIdResults.value.sessionId,
+          signInCode: sessionIdResults.value.signInCode,
           signUpCode,
           errorCode: ADD_NEW_USER_SUCCESS,
         }

@@ -43,7 +43,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     }
 
     const sessionResults = await getSessionId(c, personId.value, emailFound)
-    if (sessionResults.sessionCreateFailed) {
+    if (sessionResults.isNothing) {
       return redirectWithErrorMessage(
         c,
         'Failed to create session',
@@ -54,12 +54,12 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     setCookie(
       c,
       SESSION_COOKIE,
-      sessionResults.sessionId,
+      sessionResults.value.sessionId,
       STANDARD_COOKIE_OPTIONS
     )
 
-    console.log(`signUpCode is ${sessionResults.signInCode}`) // PRODUCTION:REMOVE
-    // await sendCodeEMail(c.env, email, sessionResults.signInCode) // PRODUCTION:UNCOMMENT
+    console.log(`signUpCode is ${sessionResults.value.signInCode}`) // PRODUCTION:REMOVE
+    // await sendCodeEMail(c.env, email, sessionResults.value.signInCode) // PRODUCTION:UNCOMMENT
 
     return redirectWithNoMessage(c, AWAIT_CODE_PATH)
   })
