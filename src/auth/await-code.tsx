@@ -1,4 +1,4 @@
-import { getCookie } from 'hono/cookie'
+import { getCookie } from 'hono/cookie' // UNREVIEWED
 import { StatusCodes } from 'http-status-codes'
 
 import { HonoApp, LocalContext } from '../bindings'

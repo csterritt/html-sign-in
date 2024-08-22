@@ -1,4 +1,4 @@
-const EMAIL_HOST = 'https://staging-life-log-email-serv-cizi.encr.app/send'
+const EMAIL_HOST = 'https://staging-life-log-email-serv-cizi.encr.app/send' // UNREVIEWED
 
 const EMAIL_HOST_DEV = 'http://localhost:4000/send' // PRODUCTION:REMOVE
 

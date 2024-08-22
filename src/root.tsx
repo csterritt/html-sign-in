@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono' // UNREVIEWED
 import { Fragment } from 'hono/jsx'
 
 import { Bindings } from './bindings'

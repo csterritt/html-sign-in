@@ -1,4 +1,4 @@
-import {} from 'hono'
+import {} from 'hono' // UNREVIEWED
 
 declare module 'hono' {
   interface ContextRenderer {

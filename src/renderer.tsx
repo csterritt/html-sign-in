@@ -1,4 +1,4 @@
-import { jsxRenderer } from 'hono/jsx-renderer'
+import { jsxRenderer } from 'hono/jsx-renderer' // UNREVIEWED
 
 export const renderer = jsxRenderer(({ children, title }) => {
   return (
