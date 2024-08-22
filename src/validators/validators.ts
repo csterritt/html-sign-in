@@ -1,4 +1,4 @@
-import * as v from 'valibot' // UNREVIEWED
+import * as v from 'valibot'
 import Maybe, { just, nothing } from 'true-myth/maybe'
 import Result, { err, ok } from 'true-myth/result'
 

@@ -1,4 +1,4 @@
-export type CookieOptions = { // UNREVIEWED
+export type CookieOptions = {
   domain?: string
   expires?: Date
   httpOnly?: boolean

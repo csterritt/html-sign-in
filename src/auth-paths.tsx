@@ -1,4 +1,4 @@
-import { Hono } from 'hono' // UNREVIEWED
+import { Hono } from 'hono'
 
 import { Bindings } from './bindings'
 import { setupAwaitCodePath } from './auth/await-code'

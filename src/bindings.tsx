@@ -1,4 +1,4 @@
-import { Context, Hono } from 'hono' // UNREVIEWED
+import { Context, Hono } from 'hono'
 
 export type Bindings = {
   HTML_SIGN_IN_DB: D1Database

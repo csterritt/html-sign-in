@@ -1,4 +1,4 @@
-import { HtmlEscaped, HtmlEscapedString } from 'hono/utils/html' // UNREVIEWED
+import { HtmlEscaped, HtmlEscapedString } from 'hono/utils/html'
 
 export type HeaderElement =
   | (string & HtmlEscaped)
