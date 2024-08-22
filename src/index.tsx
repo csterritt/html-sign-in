@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { LinearRouter } from 'hono/router/linear-router'
 import { bodyLimit } from 'hono/body-limit'
+import { logger } from 'hono/logger'
 import { StatusCodes } from 'http-status-codes'
 import Maybe from 'true-myth/maybe'
 
@@ -23,6 +24,7 @@ const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
   router: new LinearRouter(),
 })
 
+app.use(logger())
 app.use(renderer)
 app.use(
   bodyLimit({
