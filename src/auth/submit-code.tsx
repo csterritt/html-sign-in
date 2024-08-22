@@ -26,16 +26,14 @@ import {
   redirectWithNoMessage,
   redirectWithNotificationMessage,
 } from '../redirects'
-import { validCode, validEmail } from '../validators/validators'
+import {
+  ValidationResult,
+  validCode,
+  validEmail,
+} from '../validators/validators'
 
 type SubmitCodeBody = {
   code?: string
-}
-
-enum ValidationResult {
-  Success,
-  InvalidCode,
-  InvalidSession,
 }
 
 const codeIsValid = async (

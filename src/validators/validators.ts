@@ -7,6 +7,12 @@ export type SignUpParameters = {
   signUpCode: string
 }
 
+export enum ValidationResult {
+  Success,
+  InvalidCode,
+  InvalidSession,
+}
+
 const emailPipe = v.pipe(
   v.string(),
   v.trim(),

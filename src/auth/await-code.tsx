@@ -1,4 +1,4 @@
-import { getCookie } from 'hono/cookie' // UNREVIEWED
+import { getCookie } from 'hono/cookie'
 import { StatusCodes } from 'http-status-codes'
 
 import { HonoApp, LocalContext } from '../bindings'
@@ -11,7 +11,7 @@ import {
 } from '../constants'
 import { buildAwaitCodePage } from '../page-builders/build-await-code-page'
 
-export const setupAwaitCodePath = (app: HonoApp) => {
+export const setupAwaitCodePath = (app: HonoApp) =>
   app.get(AWAIT_CODE_PATH, async (c: LocalContext) => {
     const sessionInfo = c.get('Session')
     if (sessionInfo.isNothing) {
@@ -23,11 +23,8 @@ export const setupAwaitCodePath = (app: HonoApp) => {
       return c.redirect(SIGN_IN_PATH, StatusCodes.SEE_OTHER)
     }
 
-    const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
-    const notificationMessage = getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
     return buildAwaitCodePage(emailSubmitted, {
-      error: errorMessage,
-      message: notificationMessage,
+      error: getCookie(c, ERROR_MESSAGE_COOKIE) ?? '',
+      message: getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? '',
     })(c)
   })
-}

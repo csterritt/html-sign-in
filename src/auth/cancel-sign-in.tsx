@@ -1,4 +1,4 @@
-import { deleteCookie, getCookie } from 'hono/cookie' // UNREVIEWED
+import { deleteCookie, getCookie } from 'hono/cookie'
 
 import { HonoApp, LocalContext } from '../bindings'
 import {
@@ -13,7 +13,7 @@ import {
 import { removeSessionFromDb } from '../db/session-db-access'
 import { redirectWithNoMessage } from '../redirects'
 
-export const setupCancelSignInPath = (app: HonoApp) => {
+export const setupCancelSignInPath = (app: HonoApp) =>
   app.all(CANCEL_SIGN_IN_PATH, async (c: LocalContext) => {
     const sessionId = getCookie(c, SESSION_COOKIE) ?? ''
     if (sessionId.trim().length > 0) {
@@ -26,4 +26,3 @@ export const setupCancelSignInPath = (app: HonoApp) => {
     deleteCookie(c, NOTIFICATION_MESSAGE_COOKIE)
     return redirectWithNoMessage(c, ROOT_PATH)
   })
-}
