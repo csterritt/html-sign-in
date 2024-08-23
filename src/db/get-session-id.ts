@@ -1,4 +1,4 @@
-import Maybe, { just, nothing } from 'true-myth/maybe' // UNREVIEWED
+import Maybe, { just, nothing } from 'true-myth/maybe'
 import { buildSignInCode } from './build-sign-in-code'
 import { createNewSession } from './session-db-access'
 import { sleepWithJitter } from '../support/sleep'
@@ -14,14 +14,12 @@ export const getSessionId = async (
   email: string,
   signUpCode?: string
 ): Promise<Maybe<SessionIdResults>> => {
-  let gotSession = false
   let tries = 0
-  let sessionCreateFailed = true
+  let sessionCreateSuccess = false
   let sessionId = ''
   let signInCode = ''
   let timeToSleep = 10
-  while (!gotSession && tries < 5) {
-    gotSession = true
+  while (tries < 5) {
     tries += 1
     sessionId = crypto.randomUUID()
     signInCode = buildSignInCode()
@@ -39,7 +37,7 @@ export const getSessionId = async (
       signInCode,
       signUpCode,
     }
-    const results = await createNewSession(
+    const createSessionResults = await createNewSession(
       context,
       personId,
       sessionId,
@@ -47,23 +45,19 @@ export const getSessionId = async (
       sessionContent
     )
 
-    if (results.isErr) {
-      sessionCreateFailed = true
+    if (createSessionResults.isErr) {
       const isConstrainFail =
-        results.error.toString().indexOf('UNIQUE constraint failed') !== -1
-      if (isConstrainFail) {
-        gotSession = false
-      } else {
+        createSessionResults.error
+          .toString()
+          .indexOf('UNIQUE constraint failed') !== -1
+      if (!isConstrainFail) {
         console.log(
-          `=======> submit-sign-in onRequest sees session insert failed with NON CONSTRAINT-FAIL error`,
-          results.error.toString()
+          `getSessionId sees session insert failed with NON CONSTRAINT-FAIL error`,
+          createSessionResults.error.toString()
         )
-        sessionCreateFailed = true
-        break
       }
     } else {
-      gotSession = true
-      sessionCreateFailed = false
+      sessionCreateSuccess = true
       break
     }
 
@@ -71,9 +65,9 @@ export const getSessionId = async (
     timeToSleep *= 2
   }
 
-  if (sessionCreateFailed) {
-    return nothing<SessionIdResults>()
-  } else {
+  if (sessionCreateSuccess) {
     return just({ sessionId, signInCode })
+  } else {
+    return nothing<SessionIdResults>()
   }
 }
