@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS HSICounts;
 PRAGMA foreign_keys = ON;
 
 DROP TABLE IF EXISTS HSIPeople;

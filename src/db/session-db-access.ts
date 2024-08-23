@@ -1,5 +1,7 @@
-import { drizzle } from 'drizzle-orm/d1'
+import { drizzle } from 'drizzle-orm/d1' // UNREVIEWED
+import { and, eq, lt, SQL } from 'drizzle-orm'
 import Maybe, { just, nothing } from 'true-myth/maybe'
+import Result, { err, ok } from 'true-myth/result'
 
 import { getSessionId } from './get-session-id'
 import {
@@ -10,8 +12,8 @@ import {
   ADD_NEW_USER_TAKE_CODE_FAILED,
 } from '../constants'
 import { LocalContext } from '../bindings'
-import { and, eq, lt, SQL } from 'drizzle-orm'
 import * as schema from './session-schema'
+import { sleepWithJitter } from '../support/sleep'
 
 export type UserInformation = {
   Id: number
@@ -60,24 +62,40 @@ export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<Maybe<SessionInformation>> => {
-  const sessionQueryResults = await getDb(context).query.HSISession.findFirst({
-    where: eq(schema.HSISession.Session, sessionId),
-  })
+  let sessionQueryResults
+  let tries = 0
+  let timeToSleep = 10
+  while (tries < 5) {
+    try {
+      sessionQueryResults = await getDb(context).query.HSISession.findFirst({
+        where: eq(schema.HSISession.Session, sessionId),
+      })
+
+      if (sessionQueryResults != null && sessionQueryResults.Id > 0) {
+        break
+      }
+    } catch (error) {
+      console.log(`getSessionInfoForSessionId got error ${error}`)
+    }
+
+    await sleepWithJitter(timeToSleep)
+    timeToSleep *= 2
+    tries += 1
+  }
 
   if (
-    sessionQueryResults === undefined ||
-    sessionQueryResults?.Content === undefined ||
-    typeof sessionQueryResults?.Content !== 'string' ||
-    sessionQueryResults?.Content?.trim()?.length === 0
+    sessionQueryResults == null ||
+    sessionQueryResults.Content == null ||
+    typeof sessionQueryResults.Content !== 'string' ||
+    sessionQueryResults.Content.trim().length === 0
   ) {
     return nothing<SessionInformation>()
   } else {
-    let content
+    let content: Maybe<ContentInformation> = nothing<ContentInformation>()
     try {
       content = just(JSON.parse(sessionQueryResults.Content))
     } catch {
       console.log(`Unable to parse content: ${sessionQueryResults.Content}`)
-      content = nothing<ContentInformation>()
     }
 
     if (content.isNothing) {
@@ -159,16 +177,31 @@ export const createNewSession = async (
   sessionId: string,
   date: Date,
   sessionContent: object
-) => {
-  return getDb(context)
-    .insert(schema.HSISession)
-    .values({
-      PersonId: personId,
-      Session: sessionId,
-      SignedIn: false,
-      Timestamp: date.toISOString(),
-      Content: JSON.stringify(sessionContent),
-    })
+): Promise<Result<string, string>> => {
+  let result: Result<string, string>
+  try {
+    const dbResults = await getDb(context)
+      .insert(schema.HSISession)
+      .values({
+        PersonId: personId,
+        Session: sessionId,
+        SignedIn: false,
+        Timestamp: date.toISOString(),
+        Content: JSON.stringify(sessionContent),
+      })
+
+    if (dbResults.success && dbResults.meta.changed_db) {
+      result = ok('success')
+    } else {
+      console.log('unable to insert new session')
+      result = err('unable to insert new session')
+    }
+  } catch (error: any) {
+    console.log(`createNewSession caught db error ${error}`)
+    result = err(error.toString())
+  }
+
+  return result
 }
 
 export const removeSessionFromDb = async (
@@ -295,21 +328,21 @@ export const addNewUserWithEmailAndCode = async (
 
     if (addUserResults != null && addUserResults[0].Id > 0) {
       const personId = addUserResults[0].Id
-      const { sessionId, signInCode, sessionCreateFailed } = await getSessionId(
+      const sessionIdResults = await getSessionId(
         context,
         personId,
         email,
         signUpCode
       )
 
-      if (sessionCreateFailed) {
+      if (sessionIdResults.isNothing) {
         res.errorCode = ADD_NEW_USER_GET_SESSION_FAILED
       } else {
         res = {
           success: true,
           personId,
-          sessionId,
-          signInCode,
+          sessionId: sessionIdResults.value.sessionId,
+          signInCode: sessionIdResults.value.signInCode,
           signUpCode,
           errorCode: ADD_NEW_USER_SUCCESS,
         }

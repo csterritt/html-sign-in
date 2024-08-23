@@ -1,17 +1,18 @@
 import { Hono } from 'hono'
 import { LinearRouter } from 'hono/router/linear-router'
 import { bodyLimit } from 'hono/body-limit'
+import { logger } from 'hono/logger'
 import { StatusCodes } from 'http-status-codes'
 import Maybe from 'true-myth/maybe'
 
 import { Bindings } from './bindings'
+import { ProvideSession } from './middleware/provide-session'
+import { SessionInformation } from './db/session-db-access'
 import { renderer } from './renderer'
 import { setup404Path } from './404'
 import { setupProtectedPath } from './protected'
 import { setupRootPath } from './root'
 import { setupSignInPaths } from './auth-paths'
-import { SessionInformation } from './db/session-db-access'
-import { ProvideSession } from './middleware/provide-session'
 
 declare module 'hono' {
   interface ContextVariableMap {
@@ -23,6 +24,7 @@ const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
   router: new LinearRouter(),
 })
 
+app.use(logger())
 app.use(renderer)
 app.use(
   bodyLimit({

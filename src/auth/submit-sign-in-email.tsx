@@ -1,4 +1,4 @@
-import { setCookie } from 'hono/cookie'
+import { setCookie } from 'hono/cookie' // UNREVIEWED
 
 import {
   AWAIT_CODE_PATH,
@@ -43,7 +43,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     }
 
     const sessionResults = await getSessionId(c, personId.value, emailFound)
-    if (sessionResults.sessionCreateFailed) {
+    if (sessionResults.isNothing) {
       return redirectWithErrorMessage(
         c,
         'Failed to create session',
@@ -54,11 +54,11 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     setCookie(
       c,
       SESSION_COOKIE,
-      sessionResults.sessionId,
+      sessionResults.value.sessionId,
       STANDARD_COOKIE_OPTIONS
     )
 
-     await sendCodeEMail(c.env, email, sessionResults.signInCode) 
+     await sendCodeEMail(c.env, email, sessionResults.value.signInCode) 
 
     return redirectWithNoMessage(c, AWAIT_CODE_PATH)
   })

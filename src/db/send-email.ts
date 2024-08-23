@@ -1,4 +1,4 @@
-const EMAIL_HOST = 'https://staging-life-log-email-serv-cizi.encr.app/send'
+const EMAIL_HOST = 'https://staging-life-log-email-serv-cizi.encr.app/send' // UNREVIEWED
 
 
 const getEmailServerUrl = () => {

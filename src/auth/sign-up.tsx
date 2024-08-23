@@ -11,7 +11,7 @@ import {
 import { buildSignUpPage } from '../page-builders/build-sign-up-page'
 import { redirectWithNoMessage } from '../redirects'
 
-export const setupSignUpPath = (app: HonoApp) => {
+export const setupSignUpPath = (app: HonoApp) =>
   app.get(SIGN_UP_PATH, async (c: LocalContext) => {
     const sessionInfo = c.get('Session')
     if (sessionInfo.isJust && sessionInfo.value.SignedIn) {
@@ -19,11 +19,8 @@ export const setupSignUpPath = (app: HonoApp) => {
     }
 
     const emailSubmitted = getCookie(c, EMAIL_SUBMITTED_COOKIE) ?? ''
-    const errorMessage = getCookie(c, ERROR_MESSAGE_COOKIE) ?? ''
-    const notificationMessage = getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? ''
     return buildSignUpPage(emailSubmitted, {
-      error: errorMessage,
-      message: notificationMessage,
+      error: getCookie(c, ERROR_MESSAGE_COOKIE) ?? '',
+      message: getCookie(c, NOTIFICATION_MESSAGE_COOKIE) ?? '',
     })(c)
   })
-}

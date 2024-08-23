@@ -1,7 +1,8 @@
-import { LocalContext } from './bindings'
 import { deleteCookie, setCookie } from 'hono/cookie'
-import { ERROR_MESSAGE_COOKIE, NOTIFICATION_MESSAGE_COOKIE } from './constants'
 import { StatusCodes } from 'http-status-codes'
+
+import { LocalContext } from './bindings'
+import { ERROR_MESSAGE_COOKIE, NOTIFICATION_MESSAGE_COOKIE } from './constants'
 
 export const redirectWithErrorMessage = (
   c: LocalContext,
@@ -24,5 +25,6 @@ export const redirectWithNotificationMessage = (
 
 export const redirectWithNoMessage = (c: LocalContext, path: string) => {
   deleteCookie(c, ERROR_MESSAGE_COOKIE)
+  deleteCookie(c, NOTIFICATION_MESSAGE_COOKIE)
   return c.redirect(path, StatusCodes.SEE_OTHER)
 }

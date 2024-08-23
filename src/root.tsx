@@ -13,9 +13,9 @@ const signInPart: HeaderElement = (
   </div>
 )
 
-export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) => {
-  app.get(ROOT_PATH, (c) => {
-    return c.render(
+export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) =>
+  app.get(ROOT_PATH, (c) =>
+    c.render(
       <Fragment>
         {header('startup-page-banner', signInPart)}
 
@@ -26,5 +26,4 @@ export const setupRootPath = (app: Hono<{ Bindings: Bindings }>) => {
         {footer()}
       </Fragment>
     )
-  })
-}
+  )

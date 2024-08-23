@@ -5,9 +5,9 @@ import { Bindings } from './bindings'
 import { ROOT_PATH } from './constants'
 import { footer, header } from './partials/header'
 
-export const setup404Path = (app: Hono<{ Bindings: Bindings }>) => {
-  app.all('/*', (c) => {
-    return c.render(
+export const setup404Path = (app: Hono<{ Bindings: Bindings }>) =>
+  app.all('/*', (c) =>
+    c.render(
       <Fragment>
         {header('404-page-banner')}
 
@@ -26,5 +26,4 @@ export const setup404Path = (app: Hono<{ Bindings: Bindings }>) => {
         {footer()}
       </Fragment>
     )
-  })
-}
+  )

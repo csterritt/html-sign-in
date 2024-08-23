@@ -1,4 +1,5 @@
 import { createMiddleware } from 'hono/factory'
+
 import { SIGN_IN_PATH } from '../constants'
 import { LocalContext } from '../bindings'
 import { redirectWithErrorMessage } from '../redirects'
