@@ -13,6 +13,7 @@ import {
 } from '../constants'
 import { LocalContext } from '../bindings'
 import * as schema from './session-schema'
+import { sleepWithJitter } from '../support/sleep'
 
 export type UserInformation = {
   Id: number
@@ -61,24 +62,40 @@ export const getSessionInfoForSessionId = async (
   context: LocalContext,
   sessionId: string
 ): Promise<Maybe<SessionInformation>> => {
-  const sessionQueryResults = await getDb(context).query.HSISession.findFirst({
-    where: eq(schema.HSISession.Session, sessionId),
-  })
+  let sessionQueryResults
+  let tries = 0
+  let timeToSleep = 10
+  while (tries < 5) {
+    try {
+      sessionQueryResults = await getDb(context).query.HSISession.findFirst({
+        where: eq(schema.HSISession.Session, sessionId),
+      })
+
+      if (sessionQueryResults != null && sessionQueryResults.Id > 0) {
+        break
+      }
+    } catch (error) {
+      console.log(`getSessionInfoForSessionId got error ${error}`)
+    }
+
+    await sleepWithJitter(timeToSleep)
+    timeToSleep *= 2
+    tries += 1
+  }
 
   if (
-    sessionQueryResults === undefined ||
-    sessionQueryResults?.Content === undefined ||
-    typeof sessionQueryResults?.Content !== 'string' ||
-    sessionQueryResults?.Content?.trim()?.length === 0
+    sessionQueryResults == null ||
+    sessionQueryResults.Content == null ||
+    typeof sessionQueryResults.Content !== 'string' ||
+    sessionQueryResults.Content.trim().length === 0
   ) {
     return nothing<SessionInformation>()
   } else {
-    let content
+    let content: Maybe<ContentInformation> = nothing<ContentInformation>()
     try {
       content = just(JSON.parse(sessionQueryResults.Content))
     } catch {
       console.log(`Unable to parse content: ${sessionQueryResults.Content}`)
-      content = nothing<ContentInformation>()
     }
 
     if (content.isNothing) {
