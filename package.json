@@ -8,6 +8,7 @@
     "setup-random-sign-up-code": "node e2e-tests/support/setup-random-sign-up-code.js | /usr/bin/env tail -1"
   },
   "dependencies": {
+    "@logtape/logtape": "^0.4.3",
     "dayjs": "^1.11.12",
     "drizzle-orm": "^0.32.0",
     "hono": "^4.5.0",

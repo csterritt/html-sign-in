@@ -40,6 +40,8 @@ export const ERROR_MESSAGE_COOKIE = 'error-message'
 export const NOTIFICATION_MESSAGE_COOKIE = 'notification-message'
 export const SESSION_COOKIE = 'session-id'
 
+export const NO_SUCH_PERSON_ID = -1
+
 export const ADD_NEW_USER_SUCCESS = 101
 export const ADD_NEW_USER_GET_SESSION_FAILED = 102
 export const ADD_NEW_USER_ADD_USER_FAILED = 103

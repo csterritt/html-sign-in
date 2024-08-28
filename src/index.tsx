@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import { LinearRouter } from 'hono/router/linear-router'
 import { bodyLimit } from 'hono/body-limit'
-import { logger } from 'hono/logger'
 import { StatusCodes } from 'http-status-codes'
 import Maybe from 'true-myth/maybe'
 
@@ -13,12 +12,15 @@ import { setup404Path } from './404'
 import { setupProtectedPath } from './protected'
 import { setupRootPath } from './root'
 import { setupSignInPaths } from './auth-paths'
+import { logger, setupLogging } from './middleware/logger'
 
 declare module 'hono' {
   interface ContextVariableMap {
     Session: Maybe<SessionInformation>
   }
 }
+
+await setupLogging()
 
 const app: Hono<{ Bindings: Bindings }> = new Hono<{ Bindings: Bindings }>({
   router: new LinearRouter(),

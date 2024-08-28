@@ -74,7 +74,11 @@ export const validSignUpParameters = (
   for (let index = 0; index < (results?.issues?.length ?? 0); index += 1) {
     const issue: any = results.issues[index]
     if (issue.path[0]?.key === 'email') {
-      errorFound = `Invalid email address: ${emailSubmitted}`
+      if (emailSubmitted.trim().length === 0) {
+        errorFound = `Invalid empty email address`
+      } else {
+        errorFound = `Invalid email address: ${JSON.stringify(emailSubmitted)}`
+      }
       break
     } else if (issue.path[0]?.key === 'signupCode') {
       errorFound = `That sign-up code is invalid`

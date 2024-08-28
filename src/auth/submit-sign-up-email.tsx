@@ -17,6 +17,7 @@ import {
 } from '../db/session-db-access'
 import { redirectWithErrorMessage, redirectWithNoMessage } from '../redirects'
 import { validSignUpParameters } from '../validators/validators'
+import { logTapeLogger } from '../middleware/logger'
 
 type SubmitSignUpEmailBody = {
   email?: string
@@ -31,7 +32,7 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
       body.signUpCode ?? ''
     )
     if (results.isErr) {
-      console.log(`errorFound: ${results.error}`)
+      logTapeLogger.error(results.error)
       return redirectWithErrorMessage(c, results.error, SIGN_UP_PATH)
     }
 
@@ -40,12 +41,10 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
 
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, false)
-    if (personId.isJust) {
-      return redirectWithErrorMessage(
-        c,
-        `There is already an account for ${emailFound}, please sign in instead`,
-        SIGN_UP_PATH
-      )
+    if (personId.isOk) {
+      const msg = `There is already an account for ${emailFound}, please sign in instead`
+      logTapeLogger.error(msg)
+      return redirectWithErrorMessage(c, msg, SIGN_UP_PATH)
     }
 
     const signUpResults = await addNewUserWithEmailAndCode(
@@ -53,26 +52,22 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
       emailFound,
       signUpCodeFound
     )
-    if (!signUpResults.success) {
-      if (signUpResults.errorCode === ADD_NEW_USER_TAKE_CODE_FAILED) {
-        return redirectWithErrorMessage(
-          c,
-          `That sign-up code is invalid`,
-          SIGN_UP_PATH
-        )
+    if (signUpResults.isErr) {
+      if (signUpResults.error === ADD_NEW_USER_TAKE_CODE_FAILED) {
+        const msg = `That sign-up code is invalid`
+        logTapeLogger.error(msg)
+        return redirectWithErrorMessage(c, msg, SIGN_UP_PATH)
       }
 
-      return redirectWithErrorMessage(
-        c,
-        `Failed to add new user: ${ADD_NEW_USER_MESSAGES.get(signUpResults.errorCode)}`,
-        SIGN_UP_PATH
-      )
+      const msg = `Failed to add new user: ${ADD_NEW_USER_MESSAGES.get(signUpResults.error)}`
+      logTapeLogger.error(msg)
+      return redirectWithErrorMessage(c, msg, SIGN_UP_PATH)
     }
 
     setCookie(
       c,
       SESSION_COOKIE,
-      signUpResults.sessionId,
+      signUpResults.value.sessionId,
       STANDARD_COOKIE_OPTIONS
     )
 

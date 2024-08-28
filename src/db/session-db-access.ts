@@ -7,13 +7,14 @@ import { getSessionId } from './get-session-id'
 import {
   ADD_NEW_USER_ADD_USER_FAILED,
   ADD_NEW_USER_GET_SESSION_FAILED,
-  ADD_NEW_USER_OTHER_PROBLEM,
   ADD_NEW_USER_SUCCESS,
   ADD_NEW_USER_TAKE_CODE_FAILED,
+  NO_SUCH_PERSON_ID,
 } from '../constants'
 import { LocalContext } from '../bindings'
 import * as schema from './session-schema'
 import { sleepWithJitter } from '../support/sleep'
+import { logTapeLogger } from '../middleware/logger'
 
 export type UserInformation = {
   Id: number
@@ -44,12 +45,10 @@ export type SessionOnly = {
 }
 
 export type NewUserCreateResults = {
-  success: boolean
   personId: number
   sessionId: string
   signInCode: string
   signUpCode: string
-  errorCode: number
 }
 
 export type SessionDeleteList = SessionOnly[]
@@ -137,7 +136,7 @@ export const findPersonByEmail = async (
   context: LocalContext,
   email: string,
   mustBeVerified: boolean
-): Promise<Maybe<number>> => {
+): Promise<Result<number, string>> => {
   let config: { where: SQL<any> | undefined } = {
     where: eq(schema.HSIPeople.Email, email),
   }
@@ -147,12 +146,20 @@ export const findPersonByEmail = async (
       eq(schema.HSIPeople.IsVerified, true)
     )
   }
-  const result = await getDb(context).query.HSIPeople.findFirst(config)
+
+  let result
+  try {
+    result = await getDb(context).query.HSIPeople.findFirst(config)
+  } catch (error: any) {
+    const msg = `findPersonByEmail findFirst got error ${error.toString()}`
+    logTapeLogger.error(msg)
+    return err(msg)
+  }
 
   if (result != null && result.Id > 0) {
-    return just(result.Id)
+    return ok(result.Id)
   } else {
-    return nothing<number>()
+    return err('email not found')
   }
 }
 
@@ -160,9 +167,16 @@ export const findCompletePersonByEmail = async (
   context: LocalContext,
   email: string
 ): Promise<Maybe<UserInformation>> => {
-  const result = await getDb(context).query.HSIPeople.findFirst({
-    where: eq(schema.HSIPeople.Email, email),
-  })
+  let result
+  try {
+    result = await getDb(context).query.HSIPeople.findFirst({
+      where: eq(schema.HSIPeople.Email, email),
+    })
+  } catch (error: any) {
+    const msg = `findCompletePersonByEmail findFirst got error ${error.toString()}`
+    logTapeLogger.error(msg)
+    return nothing<UserInformation>()
+  }
 
   if (result != null && result.Id > 0) {
     return just(result)
@@ -295,37 +309,51 @@ export const addNewUserWithEmailAndCode = async (
   context: LocalContext,
   email: string,
   signUpCode: string
-): Promise<NewUserCreateResults> => {
+): Promise<Result<NewUserCreateResults, number>> => {
+  let success = false
+  let errorCode: number
   let res: NewUserCreateResults = {
-    success: false,
-    personId: -1,
+    personId: NO_SUCH_PERSON_ID,
     sessionId: '',
     signInCode: '',
     signUpCode: '',
-    errorCode: ADD_NEW_USER_OTHER_PROBLEM,
   }
 
-  let takeCodeResults = await getDb(context)
-    .update(schema.HSISignUpCodes)
-    .set({
-      Email: email,
-    })
-    .where(
-      and(
-        eq(schema.HSISignUpCodes.Code, signUpCode),
-        eq(schema.HSISignUpCodes.Email, 'not an email')
+  let takeCodeResults
+  try {
+    takeCodeResults = await getDb(context)
+      .update(schema.HSISignUpCodes)
+      .set({
+        Email: email,
+      })
+      .where(
+        and(
+          eq(schema.HSISignUpCodes.Code, signUpCode),
+          eq(schema.HSISignUpCodes.Email, 'not an email')
+        )
       )
-    )
+  } catch (error: any) {
+    const msg = `addNewUserWithEmailAndCode update got error ${error.toString()}`
+    logTapeLogger.error(msg)
+    return err(ADD_NEW_USER_TAKE_CODE_FAILED)
+  }
 
   if (takeCodeResults?.success && takeCodeResults.meta?.changed_db) {
-    let addUserResults = await getDb(context)
-      .insert(schema.HSIPeople)
-      .values({
-        Email: email,
-        IsVerified: false,
-        AddedTimestamp: new Date().toISOString(),
-      })
-      .returning({ Id: schema.HSIPeople.Id })
+    let addUserResults
+    try {
+      addUserResults = await getDb(context)
+        .insert(schema.HSIPeople)
+        .values({
+          Email: email,
+          IsVerified: false,
+          AddedTimestamp: new Date().toISOString(),
+        })
+        .returning({ Id: schema.HSIPeople.Id })
+    } catch (error: any) {
+      const msg = `addNewUserWithEmailAndCode insert of new user got error ${error.toString()}`
+      logTapeLogger.error(msg)
+      return err(ADD_NEW_USER_ADD_USER_FAILED)
+    }
 
     if (addUserResults != null && addUserResults[0].Id > 0) {
       const personId = addUserResults[0].Id
@@ -337,23 +365,27 @@ export const addNewUserWithEmailAndCode = async (
       )
 
       if (sessionIdResults.isNothing) {
-        res.errorCode = ADD_NEW_USER_GET_SESSION_FAILED
+        errorCode = ADD_NEW_USER_GET_SESSION_FAILED
       } else {
+        success = true
+        errorCode = ADD_NEW_USER_SUCCESS
         res = {
-          success: true,
           personId,
           sessionId: sessionIdResults.value.sessionId,
           signInCode: sessionIdResults.value.signInCode,
           signUpCode,
-          errorCode: ADD_NEW_USER_SUCCESS,
         }
       }
     } else {
-      res.errorCode = ADD_NEW_USER_ADD_USER_FAILED
+      errorCode = ADD_NEW_USER_ADD_USER_FAILED
     }
   } else {
-    res.errorCode = ADD_NEW_USER_TAKE_CODE_FAILED
+    errorCode = ADD_NEW_USER_TAKE_CODE_FAILED
   }
 
-  return res
+  if (success) {
+    return ok(res)
+  } else {
+    return err(errorCode)
+  }
 }

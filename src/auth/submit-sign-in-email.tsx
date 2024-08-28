@@ -34,7 +34,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     const emailFound = email.value
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, true)
-    if (personId.isNothing) {
+    if (personId.isErr) {
       return redirectWithErrorMessage(
         c,
         `Invalid email address: ${emailFound}`,
