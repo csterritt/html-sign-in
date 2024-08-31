@@ -3,6 +3,7 @@ import { setCookie } from 'hono/cookie' // UNREVIEWED
 import {
   AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
+  NO_SUCH_PERSON_ID,
   SESSION_COOKIE,
   SIGN_IN_PATH,
   STANDARD_COOKIE_OPTIONS,
@@ -34,7 +35,7 @@ export const setupSubmitSignInEmailPath = (app: HonoApp) => {
     const emailFound = email.value
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, true)
-    if (personId.isErr) {
+    if (personId.isErr || personId.value === NO_SUCH_PERSON_ID) {
       return redirectWithErrorMessage(
         c,
         `Invalid email address: ${emailFound}`,

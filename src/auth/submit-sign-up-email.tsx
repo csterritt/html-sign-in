@@ -5,6 +5,7 @@ import {
   ADD_NEW_USER_TAKE_CODE_FAILED,
   AWAIT_CODE_PATH,
   EMAIL_SUBMITTED_COOKIE,
+  NO_SUCH_PERSON_ID,
   SESSION_COOKIE,
   SIGN_UP_PATH,
   STANDARD_COOKIE_OPTIONS,
@@ -41,10 +42,14 @@ export const setupSubmitSignUpEmailPath = (app: HonoApp) => {
 
     setCookie(c, EMAIL_SUBMITTED_COOKIE, emailFound, STANDARD_COOKIE_OPTIONS)
     const personId = await findPersonByEmail(c, emailFound, false)
-    if (personId.isOk) {
+    if (personId.isOk && personId.value !== NO_SUCH_PERSON_ID) {
       const msg = `There is already an account for ${emailFound}, please sign in instead`
       logTapeLogger.error(msg)
       return redirectWithErrorMessage(c, msg, SIGN_UP_PATH)
+    }
+    if (personId.isErr) {
+      logTapeLogger.error(personId.error)
+      return redirectWithErrorMessage(c, personId.error, SIGN_UP_PATH)
     }
 
     const signUpResults = await addNewUserWithEmailAndCode(

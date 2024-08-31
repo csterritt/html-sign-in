@@ -159,7 +159,7 @@ export const findPersonByEmail = async (
   if (result != null && result.Id > 0) {
     return ok(result.Id)
   } else {
-    return err('email not found')
+    return ok(NO_SUCH_PERSON_ID)
   }
 }
 
