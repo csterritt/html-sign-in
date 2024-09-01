@@ -16,7 +16,7 @@ const renderAwaitCodePage = (
 ) =>
   c.render(
     <Fragment>
-      {header('await-code-page-banner')}
+      {header(c, 'await-code-page-banner', false)}
 
       <div class='flex-grow mx-6'>
         {addNotificationsIfAny(options)}

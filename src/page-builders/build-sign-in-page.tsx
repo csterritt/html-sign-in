@@ -16,7 +16,7 @@ const renderSignInPage = (
 ) =>
   c.render(
     <Fragment>
-      {header('sign-in-page-banner')}
+      {header(c, 'sign-in-page-banner', false)}
 
       <div class='flex-grow mx-6'>
         {addNotificationsIfAny(options)}

@@ -1,15 +1,15 @@
 import { Hono } from 'hono'
 import { Fragment } from 'hono/jsx'
 
-import { Bindings } from './bindings'
+import { Bindings, LocalContext } from './bindings'
 import { ROOT_PATH } from './constants'
 import { footer, header } from './partials/header'
 
 export const setup404Path = (app: Hono<{ Bindings: Bindings }>) =>
-  app.all('/*', (c) =>
+  app.all('/*', (c: LocalContext) =>
     c.render(
       <Fragment>
-        {header('404-page-banner')}
+        {header(c, '404-page-banner')}
 
         <div class='flex-grow mx-6'>
           <p class='text-2xl italic my-6' data-testid='404-message'>

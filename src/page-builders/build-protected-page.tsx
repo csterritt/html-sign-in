@@ -1,27 +1,13 @@
 import { Fragment } from 'hono/jsx' // UNREVIEWED
 import { addNotificationsIfAny } from './add-notifications-if-any'
 
-import { footer, header, HeaderElement } from '../partials/header'
+import { footer, header } from '../partials/header'
 import { ForwardOptions, LocalContext } from '../bindings'
-import { CANCEL_SIGN_IN_PATH } from '../constants'
-
-const signOutPart: HeaderElement = (
-  <div class='px-2 mx-2'>
-    <form action={CANCEL_SIGN_IN_PATH} method='POST'>
-      <input
-        type='submit'
-        class='btn btn-secondary'
-        data-testid='sign-out-link'
-        value='Sign Out'
-      />
-    </form>
-  </div>
-)
 
 const renderProtectedPage = (c: LocalContext, options?: ForwardOptions) =>
   c.render(
     <Fragment>
-      {header('protected-page-banner', signOutPart)}
+      {header(c, 'protected-page-banner')}
 
       <div class='flex-grow mx-6'>
         {addNotificationsIfAny(options)}

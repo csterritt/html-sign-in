@@ -16,7 +16,7 @@ const renderSignUpPage = (
 ) =>
   c.render(
     <Fragment>
-      {header('sign-up-page-banner')}
+      {header(c, 'sign-up-page-banner', false)}
 
       <div class='flex-grow mx-6'>
         {addNotificationsIfAny(options)}
